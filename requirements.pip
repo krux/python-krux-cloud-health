@@ -1,0 +1,7 @@
+--extra-index-url https://staticfiles.krxd.net/foss/pypi/
+
+# Krux's standard library, which this is built on
+krux-stdlib==2.2.1
+
+# Requests information from API webpages
+requests==2.9.1
