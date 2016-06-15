@@ -37,6 +37,7 @@ class Application(Application):
         super(Application, self).__init__(name=name)
 
         self.api_key = self.args.api_key
+        self.logger = get_logger(name)
 
     def add_cli_arguments(self, parser):
         # Call to the superclass first
@@ -84,6 +85,7 @@ class Application(Application):
 
         curr_month_info = {curr_month: dict(zip(items_list, data_list))}
 
+        print pprint.pformat(curr_month_info, indent=2, width=20)
 
 def main():
     app = Application()
