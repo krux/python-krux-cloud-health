@@ -15,18 +15,18 @@ from setuptools import setup, find_packages
 VERSION  = '0.0.1'
 
 # URL to the repository on Github.
-REPO_URL = 'https://github.com/krux/python-krux-Cloud-Health-API'
+REPO_URL = 'https://github.com/krux/python-krux-cloud-health'
 # Github will generate a tarball as long as you tag your releases, so don't
 # forget to tag!
 DOWNLOAD_URL = ''.join((REPO_URL, '/tarball/release/', VERSION))
 
 
 setup(
-    name='python-krux-Cloud-API',
+    name='python-krux-cloud-health',
     version=VERSION,
     author='Kareena Hirani',
     author_email='khirani@krux.com',
-    description='',
+    description='Retrieves and organizes info from Krux Cloud Health API',
     url=REPO_URL,
     download_url=DOWNLOAD_URL,
     license='All Rights Reserved.',
@@ -35,7 +35,7 @@ setup(
     install_requires=[],
     entry_points={
         'console_scripts': [
-            'Cloud-API-script=krux_Cloud_Health_API.CloudAPI:main',
+            'Cloud-API-script=krux_cloud_health.CloudAPI:main',
         ],
     },
 )
