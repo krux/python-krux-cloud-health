@@ -57,7 +57,6 @@ class CloudAPI(Application):
 
     def get_report(self, report, api_key):
         uri = urlparse.urljoin(API_ENDPOINT, report)
-        # uri += "?" + time_filter
         uri += "?api_key=%s" % api_key
         r = requests.get(uri)
         return r.json()
