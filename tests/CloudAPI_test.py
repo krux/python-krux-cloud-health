@@ -28,6 +28,8 @@ class CloudAPItest(unittest.TestCase):
     """
         Test case for CloudAPI
     """
-
+    # Replace '12345' with your own API key
+    @patch.object(sys, 'argv', ['placeholder', '--api-key', '12345'])
     def test_cloud_health_call(self):
-        self.assertEqual(0, 1)
+        test_case = CloudAPI()
+        test_case.run()
