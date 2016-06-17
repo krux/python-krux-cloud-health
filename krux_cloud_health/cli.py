@@ -53,14 +53,13 @@ class Application(krux.cli.Application):
             '--month',
             type=str,
             default=None,
-            help="Retrieve cost history data for specific month",
+            help="Retrieve cost history data for specific month from the past year.",
         )
 
     def run(self):
-        self.stats.incr("foo", 1)
         costHistory = self.cloud_health.costHistory()
-        costCurrent = self.cloud_health.costCurrent()
-        #print pprint.pformat(costHistory, indent=2, width=20)
+        print pprint.pformat(costHistory, indent=2, width=20)
+        # costCurrent = self.cloud_health.costCurrent()
         #print pprint.pformat(costCurrent, indent=2, width=20)
 
 
