@@ -36,7 +36,7 @@ setup(
     entry_points={
         'console_scripts': [
             'krux-cloud-health-script=krux_cloud_health.cli:main',
-            'krux-cloud-health-test=krux_cloud_health.cli_test:main',
+            'krux-cloud-health-test=krux_cloud_health.cli_test:main', 
         ],
     },
 )
