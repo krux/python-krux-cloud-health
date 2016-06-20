@@ -40,11 +40,6 @@ class Application(krux.cli.Application):
         group = get_group(parser, self.name)
 
         group.add_argument(
-            '--name',
-            help="Name of user"
-        )
-
-        group.add_argument(
             '--api-key',
             help="API key to retrieve data",
         )

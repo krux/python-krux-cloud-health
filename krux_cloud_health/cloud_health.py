@@ -26,8 +26,6 @@ import requests
 #
 
 from krux.cli import Application
-from krux.logging import get_logger
-from krux.stats import get_stats
 from krux.cli import get_parser, get_group
 
 API_ENDPOINT = "https://apps.cloudhealthtech.com/"
@@ -36,8 +34,9 @@ API_ENDPOINT = "https://apps.cloudhealthtech.com/"
 class CloudHealth(object):
     """
     """
-    def __init__(self, api_key, stats):
+    def __init__(self, api_key, logger, stats):
         self.api_key = api_key
+        self.logger = logger
         self.stats = stats
 
     def costHistory(self):

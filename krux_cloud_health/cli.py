@@ -19,6 +19,7 @@ import pprint
 #
 
 import krux.cli
+from krux.logging import get_logger
 from krux.cli import get_group
 from krux_cloud_health.cloud_health import CloudHealth
 
@@ -31,7 +32,8 @@ class Application(krux.cli.Application):
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)
 
-        self.cloud_health = CloudHealth(api_key=self.args.api_key, stats=self.stats)
+        self.logger = get_logger(name)
+        self.cloud_health = CloudHealth(api_key=self.args.api_key, logger=self.logger, stats=self.stats)
         self.month = self.args.month
 
     def add_cli_arguments(self, parser):
