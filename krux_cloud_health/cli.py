@@ -32,6 +32,7 @@ class Application(krux.cli.Application):
         super(Application, self).__init__(name=name)
 
         self.cloud_health = CloudHealth(api_key=self.args.api_key, stats=self.stats)
+        self.month = self.args.month
 
     def add_cli_arguments(self, parser):
         # Call to the superclass first
@@ -41,7 +42,7 @@ class Application(krux.cli.Application):
 
         group.add_argument(
             '--name',
-            help="Name of user"
+            help="Name of application"
         )
 
         group.add_argument(
@@ -52,16 +53,22 @@ class Application(krux.cli.Application):
         group.add_argument(
             '--month',
             type=str,
-            default=None,
-            help="Retrieve cost history data for specific month from the past year.",
+            default='total',
+            help="Retrieve cost history data for specific month from the past year. Must be in 'YYYY-MM' format.",
         )
 
     def run(self):
         costHistory = self.cloud_health.costHistory()
-        print pprint.pformat(costHistory, indent=2, width=20)
-        # costCurrent = self.cloud_health.costCurrent()
-        #print pprint.pformat(costCurrent, indent=2, width=20)
 
+        month_index = month_index = [item.keys()[0] for item in costHistory].index(self.args.month)
+
+        if self.args.month != 'total':
+            print pprint.pformat(costHistory[month_index], indent=2, width=20)
+        else:
+            print pprint.pformat(costHistory, indent=2, width=20)
+
+        for item, data in costHistory[month_index][self.args.month].iteritems():
+                self.stats.incr(item, data)
 
 def main():
     app = Application()

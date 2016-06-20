@@ -41,7 +41,6 @@ class CloudHealth(object):
         self.stats = stats
 
     def costHistory(self):
-
         report = "olap_reports/cost/history"
 
         uri_args = {'api_key': self.api_key}
@@ -49,55 +48,29 @@ class CloudHealth(object):
         r = requests.get(uri, params=uri_args)
         call = r.json()
 
-        curr_month = "2016-06"
         months = call["dimensions"][0]["time"]
-        month_index = [index for index, month in enumerate(months) if month["name"] == curr_month][0]
         month_list = [str(month["name"]) for month in months]
 
         items_list = call["dimensions"][1]["AWS-Service-Category"]
-        #items_list = [item for item in items]
-        #items_dict = {str(item["label"]): items_list[item.get("parent") + 1]["label"] for item in items_list if item.get("parent") >= 0}
 
-        # total_data = []
+        total_data = []
 
-        # for month_index in range(len(month_list)):
+        for month_index in range(len(month_list)):
+            month = month_list[month_index]
+            month_info = {month: {}}
 
-        curr_month_info = {}
-        curr_month_info[curr_month] = {}
+            data_nested = call["data"][month_index]
+            data_list = [data for sublist in data_nested for data in sublist]
+            data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
 
-        data_nested = call["data"][month_index]
-        data_list = [data for sublist in data_nested for data in sublist]
-        data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
+            for i in range(len(items_list)):
+                item = items_list[i]
+                if item.get("parent") >= 0 and item["label"] != "Total":
+                    month_info[month][item["label"]] = data_list[i]
+                    self.stats.incr(item["label"], data_list[i])
+            total_data.append(month_info)
 
-        for i in range(len(items_list)):
-            item = items_list[i]
-            #print pprint.pformat(item, indent=2, width=20)
-            if item.get("parent") >= 0 and item["label"] != "Total":
-                curr_month_info[curr_month][item["label"]] = data_list[i]
-                self.stats.incr(item["label"], data_list[i])
-
-        return curr_month_info
-
-            #month_info = {month_list[month_index]: dict(zip(items_list, data_list))}
-
-            # if month_list[month_index] != "total":
-            #     print month_list[month_index] + ".S3 - API: ", month_info[month_list[month_index]]["S3 - API"]
-            #     self.stats.incr(month_list[month_index] + ".S3 - API", month_info[month_list[month_index]]["S3 - API"])
-
-            # total_data.append(month_info)
-
-        # return total_data
-
-        # data_nested = call["data"][month_index]
-        # data_list = [data for sublist in data_nested for data in sublist]
-
-        # data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
-
-        # curr_month_info = {curr_month: dict(zip(items_list, data_list))}
-
-        # for item, data in curr_month_info[curr_month].iteritems():
-        #     print item, ": ", data
-        #     self.stats.incr(item, data)
+        return total_data
 
     def costCurrent(self):
 
