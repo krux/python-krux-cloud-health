@@ -41,11 +41,6 @@ class Application(krux.cli.Application):
         group = get_group(parser, self.name)
 
         group.add_argument(
-            '--name',
-            help="Name of application"
-        )
-
-        group.add_argument(
             '--api-key',
             help="API key to retrieve data",
         )
@@ -62,13 +57,8 @@ class Application(krux.cli.Application):
 
         month_index = month_index = [item.keys()[0] for item in costHistory].index(self.args.month)
 
-        if self.args.month != 'total':
-            print pprint.pformat(costHistory[month_index], indent=2, width=20)
-        else:
-            print pprint.pformat(costHistory, indent=2, width=20)
-
         for item, data in costHistory[month_index][self.args.month].iteritems():
-                self.stats.incr(item, data)
+            self.stats.incr(item, data)
 
 def main():
     app = Application()
