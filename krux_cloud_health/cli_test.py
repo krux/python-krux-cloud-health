@@ -44,15 +44,6 @@ class Application(krux.cli.Application):
         # Call to the superclass first
         add_cloud_health_cli_arguments(parser)
 
-        group = get_group(parser, self.name)
-
-        group.add_argument(
-            '--month',
-            type=str,
-            default='total',
-            help="Retrieve cost history data for specific month from the past year. Must be in 'YYYY-MM' format.",
-        )
-
     def run(self):
         costHistory = self.cloud_health.costHistory()
         self.logger.debug(pprint.pformat(costHistory, indent=2, width=20))

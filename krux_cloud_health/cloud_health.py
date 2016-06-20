@@ -13,7 +13,6 @@ Class to retrieve data from Cloud Health Tech API
 from __future__ import absolute_import
 import sys
 import urlparse
-import pprint
 
 #
 # Third party libraries
@@ -37,17 +36,17 @@ def add_cloud_health_cli_arguments(parser):
     group = get_group(parser, NAME)
     
     group.add_argument(
-        '--api-key',
+        'api_key',
         type=str,
         help="API key to retrieve data",
     )
 
 
 def get_cloud_health(args, logger, stats):
-    if args.api_key:
-        api_key = args.api_key
-    else:
-        raise ValueError("Must enter API key.")
+    if not args:
+        parser = get_parser(description=NAME)
+        add_dns_cli_arguments(parser)
+        args = parser.parse_args()
 
     if not logger:
         logger = get_logger(name=NAME)
@@ -56,7 +55,7 @@ def get_cloud_health(args, logger, stats):
         stats = get_stats(prefix=NAME)
 
     return CloudHealth(
-        api_key=api_key,
+        api_key=args.api_key,
         logger=logger,
         stats=stats,
         )
@@ -73,7 +72,7 @@ class CloudHealth(object):
     def costHistory(self):
         report = "olap_reports/cost/history"
         api_call = self.get_api_call(report, self.api_key)
-
+            
         months = api_call["dimensions"][0]["time"]
         month_list = [str(month["name"]) for month in months]
 
@@ -122,4 +121,8 @@ class CloudHealth(object):
         uri_args = {'api_key': api_key}
         uri = urlparse.urljoin(API_ENDPOINT, report)
         r = requests.get(uri, params=uri_args)
-        return r.json()
+        api_call = r.json()
+        if api_call.get('error'):
+            raise ValueError(api_call['error'])
+        return api_call
+

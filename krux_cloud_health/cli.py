@@ -37,7 +37,7 @@ class Application(krux.cli.Application):
         except ValueError as e:
             self.logger.warning(e.message)
             self.exit(1)
-        
+
         self.month = self.args.month
 
     def add_cli_arguments(self, parser):
@@ -54,7 +54,11 @@ class Application(krux.cli.Application):
         )
 
     def run(self):
-        costHistory = self.cloud_health.costHistory()
+        try:
+            costHistory = self.cloud_health.costHistory()
+        except ValueError as e:
+            self.logger.error(e.message)
+            self.exit(1)
 
         month_index = month_index = [item.keys()[0] for item in costHistory].index(self.args.month)
 
