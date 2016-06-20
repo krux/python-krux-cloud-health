@@ -4,4 +4,25 @@
 krux-stdlib==2.2.1
 
 # Requests information from API webpages
-requests==2.9.1
+requests==2.10.0
+
+# Transitive Dependencies
+
+# From krux-stdlib
+pystache==0.5.4
+Sphinx==1.2b1
+Jinja2==2.6
+Pygments==1.6
+docutils==0.10
+kruxstatsd==0.2.4
+statsd==2.0.3  # statsd is pegged at 2.0.3 by kruxstatsd
+argparse==1.2.1
+GitPython==0.3.2.RC1
+simplejson==3.3.0
+tornado==3.0.1
+lockfile==0.9.1
+subprocess32==3.2.7
+async==0.6.1
+fudge==1.0.3
+gitdb==0.5.4
+smmap==0.8.2
