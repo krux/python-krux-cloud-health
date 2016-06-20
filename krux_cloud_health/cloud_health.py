@@ -29,6 +29,37 @@ from krux.cli import Application
 from krux.cli import get_parser, get_group
 
 API_ENDPOINT = "https://apps.cloudhealthtech.com/"
+NAME = "cloud-health-tech"
+
+
+def add_cloud_health_cli_arguments(parser):
+    # Add those specific to the application
+    group = get_group(parser, NAME)
+    
+    group.add_argument(
+        '--api-key',
+        type=str,
+        help="API key to retrieve data",
+    )
+
+
+def get_cloud_health(args, logger, stats):
+    if args.api_key:
+        api_key = args.api_key
+    else:
+        raise ValueError("Must enter API key.")
+
+    if not logger:
+        logger = get_logger(name=NAME)
+
+    if not stats:
+        stats = get_stats(prefix=NAME)
+
+    return CloudHealth(
+        api_key=api_key,
+        logger=logger,
+        stats=stats,
+        )
 
 
 class CloudHealth(object):

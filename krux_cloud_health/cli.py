@@ -21,9 +21,7 @@ import pprint
 import krux.cli
 from krux.logging import get_logger
 from krux.cli import get_group
-from krux_cloud_health.cloud_health import CloudHealth
-
-NAME = "cloud-health-tech"
+from krux_cloud_health.cloud_health import CloudHealth, NAME, add_cloud_health_cli_arguments, get_cloud_health
 
 
 class Application(krux.cli.Application):
@@ -33,19 +31,20 @@ class Application(krux.cli.Application):
         super(Application, self).__init__(name=name)
 
         self.logger = get_logger(name)
-        self.cloud_health = CloudHealth(api_key=self.args.api_key, logger=self.logger, stats=self.stats)
+
+        try:
+            self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
+        except ValueError as e:
+            self.logger.warning(e.message)
+            self.exit(1)
+        
         self.month = self.args.month
 
     def add_cli_arguments(self, parser):
         # Call to the superclass first
-        super(Application, self).add_cli_arguments(parser)
+        add_cloud_health_cli_arguments(parser)
 
         group = get_group(parser, self.name)
-
-        group.add_argument(
-            '--api-key',
-            help="API key to retrieve data",
-        )
 
         group.add_argument(
             '--month',
