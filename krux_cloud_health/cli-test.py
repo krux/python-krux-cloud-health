@@ -20,6 +20,7 @@ import pprint
 
 import krux.cli
 from krux.cli import get_group
+from krux.logging import get_logger
 from krux_cloud_health.cloud_health import CloudHealth
 
 NAME = "cloud-health-tech"
@@ -31,7 +32,8 @@ class Application(krux.cli.Application):
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)
 
-        self.cloud_health = CloudHealth(api_key=self.args.api_key, stats=self.stats)
+        self.logger = get_logger(name)
+        self.cloud_health = CloudHealth(api_key=self.args.api_key, logger=self.logger, stats=self.stats)
 
     def add_cli_arguments(self, parser):
         # Call to the superclass first
@@ -46,9 +48,7 @@ class Application(krux.cli.Application):
 
     def run(self):
         costHistory = self.cloud_health.costHistory()
-        print pprint.pformat(costHistory, indent=2, width=20)
-        # costCurrent = self.cloud_health.costCurrent()
-        #print pprint.pformat(costCurrent, indent=2, width=20)
+        self.logger.debug(pprint.pformat(costHistory, indent=2, width=20))
 
 
 def main():

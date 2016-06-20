@@ -42,7 +42,6 @@ class CloudHealth(object):
     def costHistory(self):
         report = "olap_reports/cost/history"
         api_call = self.get_api_call(report, self.api_key)
-        self.logger.debug(api_call)
 
         months = api_call["dimensions"][0]["time"]
         month_list = [str(month["name"]) for month in months]
