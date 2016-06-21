@@ -59,7 +59,7 @@ class Application(krux.cli.Application):
             self.logger.error(e.message)
             self.exit(1)
 
-        month_index = month_index = [item.keys()[0] for item in costHistory].index(self.args.month)
+        month_index = [item.keys()[0] for item in costHistory].index(self.args.month)
 
         for item, data in costHistory[month_index][self.args.month].iteritems():
             self.stats.incr(item, data)

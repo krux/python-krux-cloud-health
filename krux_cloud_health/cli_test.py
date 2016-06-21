@@ -38,8 +38,6 @@ class Application(krux.cli.Application):
             self.logger.warning(e.message)
             self.exit(1)
 
-        self.month = self.args.month
-
     def add_cli_arguments(self, parser):
         # Call to the superclass first
         add_cloud_health_cli_arguments(parser)
