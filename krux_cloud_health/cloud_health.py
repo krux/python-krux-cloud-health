@@ -69,32 +69,44 @@ class CloudHealth(object):
         self.logger = logger
         self.stats = stats
 
-    def costHistory(self):
+    def costHistory(self, month_input=None):
         report = "olap_reports/cost/history"
         api_call = self.get_api_call(report, self.api_key)
-            
-        months = api_call["dimensions"][0]["time"]
-        month_list = [str(month["name"]) for month in months]
+
+        months_dict = api_call["dimensions"][0]["time"]
+        months_list = [str(month["name"]) for month in months_dict]
 
         items_list = api_call["dimensions"][1]["AWS-Service-Category"]
 
-        total_data = []
+        if month_input is None:
+            total_data = []
+            for month_index in range(len(months_list)):
+                month = months_list[month_index]
+                month_info = self.get_month_info(api_call, items_list, month, month_index)
+                total_data.append(month_info)
+            return total_data
 
-        for month_index in range(len(month_list)):
-            month = month_list[month_index]
-            month_info = {month: {}}
+        if month_input not in months_list:
+            raise ValueError("Invalid month input.")
+            self.exit(1)
 
-            data_nested = api_call["data"][month_index]
-            data_list = [data for sublist in data_nested for data in sublist]
-            data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
+        month_index = months_list.index(month_input)
+        month_info = self.get_month_info(api_call, items_list, month_input, month_index)
+        return month_info
 
-            for i in range(len(items_list)):
-                item = items_list[i]
-                if item.get("parent") >= 0 and item["label"] != "Total":
-                    month_info[month][str(item["label"])] = data_list[i]
-            total_data.append(month_info)
+    def get_month_info(self, api_call, items_list, month, month_index):
+        month_info = {month: {}}
 
-        return total_data
+        data_nested = api_call["data"][month_index]
+        data_list = [data for sublist in data_nested for data in sublist]
+        data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
+
+        for i in range(len(items_list)):
+            item = items_list[i]
+            if item.get("parent") >= 0 and item["label"] != "Total":
+                month_info[month][str(item["label"])] = data_list[i]
+
+        return month_info
 
     def costCurrent(self):
         report = "olap_reports/cost/current"

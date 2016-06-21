@@ -17,6 +17,12 @@ import sys
 # Third party libraries
 #
 
+import datetime
+
+#
+# Internal libraries
+#
+
 import krux.cli
 from krux.logging import get_logger
 from krux.cli import get_group
@@ -37,7 +43,11 @@ class Application(krux.cli.Application):
             self.logger.warning(e.message)
             self.exit(1)
 
-        self.month = self.args.month
+        if self.args.curr_month:
+            today_date = datetime.date.today()
+            self.month = '{}-{}'.format(today_date.year, '%02d' % today_date.month)
+        else:
+            self.month = self.args.month
 
     def add_cli_arguments(self, parser):
         # Call to the superclass first
@@ -52,20 +62,20 @@ class Application(krux.cli.Application):
             help="Retrieve cost history data for specific month from the past 12 months. Must be in 'YYYY-MM' format.",
         )
 
+        group.add_argument(
+            '--curr-month',
+            action='store_true',
+            help="Retrieve cost history data for current month.",
+        )
+
     def run(self):
         try:
-            costHistory = self.cloud_health.costHistory()
+            costHistory = self.cloud_health.costHistory(self.month)
         except ValueError as e:
             self.logger.error(e.message)
             self.exit(1)
-
-        month_list = [item.keys()[0] for item in costHistory]
-        if self.month not in month_list:
-            self.logger.error("Invalid month input.")
-            self.exit(1)
-
-        month_index = month_list.index(self.month)
-        for item, data in costHistory[month_index][self.month].iteritems():
+        
+        for item, data in costHistory[self.month].iteritems():
             self.stats.incr(item, data)
 
 def main():
