@@ -11,7 +11,6 @@ CLI tools for accessing Krux Cloud Health Tech
 #
 
 from __future__ import absolute_import
-import sys
 import pprint
 
 #
