@@ -11,17 +11,12 @@ The most common use case is to build a CLI script using `krux_cloud_health.cli.A
 import krux.cli
 from krux_cloud_health.cloud_health import CloudHealth, NAME, add_cloud_health_cli_arguments, get_cloud_health
 
-def run(self):
-    try:
-        costHistory = self.cloud_health.costHistory()
-    except ValueError as e:
-        self.logger.error(e.message)
-        self.exit(1)
+class Application(krux.cli.Application):
+    def __init__(self, name=NAME):
+        self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
 
-    month_index = month_index = [item.keys()[0] for item in costHistory].index(self.args.month)
-
-    for item, data in costHistory[month_index][self.args.month].iteritems():
-        self.stats.incr(item, data)
+	def run(self):
+	    costHistory = self.cloud_health.costHistory()
 
 def main():
     app = Application()
@@ -32,3 +27,4 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
