@@ -49,7 +49,7 @@ class Application(krux.cli.Application):
             '--month',
             type=str,
             default='total',
-            help="Retrieve cost history data for specific month from the past year. Must be in 'YYYY-MM' format.",
+            help="Retrieve cost history data for specific month from the past 12 months. Must be in 'YYYY-MM' format.",
         )
 
     def run(self):
@@ -59,9 +59,13 @@ class Application(krux.cli.Application):
             self.logger.error(e.message)
             self.exit(1)
 
-        month_index = [item.keys()[0] for item in costHistory].index(self.args.month)
+        month_list = [item.keys()[0] for item in costHistory]
+        if self.month not in month_list:
+            self.logger.error("Invalid month input.")
+            self.exit(1)
 
-        for item, data in costHistory[month_index][self.args.month].iteritems():
+        month_index = month_list.index(self.month)
+        for item, data in costHistory[month_index][self.month].iteritems():
             self.stats.incr(item, data)
 
 def main():
