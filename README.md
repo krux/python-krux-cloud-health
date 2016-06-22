@@ -9,14 +9,12 @@ The most common use case is to build a CLI script using `krux_cloud_health.cli.A
 
 ```python
 import krux.cli
-from krux_cloud_health.cloud_health import CloudHealth, NAME, add_cloud_health_cli_arguments, get_cloud_health
+import krux_cloud_health.cli.Application
 
-class Application(krux.cli.Application):
-    def __init__(self, name=NAME):
-        self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
+class Application(krux_cloud_health.cli.Application):
 
 	def run(self):
-	    costHistory = self.cloud_health.costHistory()
+	    print self.cloud_health.costHistory()
 
 def main():
     app = Application()
@@ -27,4 +25,3 @@ def main():
 if __name__ == '__main__':
     main()
 ```
-

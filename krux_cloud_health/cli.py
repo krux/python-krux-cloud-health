@@ -11,7 +11,6 @@ CLI tools for accessing Krux Cloud Health Tech
 #
 
 from __future__ import absolute_import
-import sys
 
 #
 # Third party libraries
@@ -27,7 +26,6 @@ import krux.cli
 from krux.logging import get_logger
 from krux.cli import get_group
 from krux_cloud_health.cloud_health import CloudHealth, NAME, add_cloud_health_cli_arguments, get_cloud_health
-
 
 class Application(krux.cli.Application):
     def __init__(self, name=NAME):
@@ -74,9 +72,10 @@ class Application(krux.cli.Application):
         except ValueError as e:
             self.logger.error(e.message)
             self.exit(1)
-        
+
         for item, data in costHistory[self.month].iteritems():
             self.stats.incr(item, data)
+
 
 def main():
     app = Application()

@@ -34,7 +34,7 @@ class Application(krux.cli.Application):
         try:
             self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
         except ValueError as e:
-            self.logger.warning(e.message)
+            self.logger.error(e.message)
             self.exit(1)
 
     def add_cli_arguments(self, parser):
@@ -44,6 +44,9 @@ class Application(krux.cli.Application):
     def run(self):
         costHistory = self.cloud_health.costHistory()
         self.logger.debug(pprint.pformat(costHistory, indent=2, width=20))
+
+        #costCurrent = self.cloud_health.costCurrent()
+        #self.logger.debug(pprint.pformat(costCurrent, indent=2, width=20))
 
 def main():
     app = Application()
