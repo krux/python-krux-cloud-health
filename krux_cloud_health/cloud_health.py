@@ -78,16 +78,7 @@ class CloudHealth(object):
 
         items_list = api_call["dimensions"][1]["AWS-Service-Category"]
 
-        if month_input is None:
-            total_data = self._get_total_data(api_call, items_list, months_list)
-            return total_data
-
-        if month_input not in months_list:
-            raise ValueError("Invalid month input.")
-
-        month_index = months_list.index(month_input)
-        month_info = self._get_data_info(api_call, items_list, month_input, month_index)
-        return month_info
+        return self._get_data(api_call, items_list, months_list, month_input, "month")
 
     def costCurrent(self, aws_account_input=None):
         report = "olap_reports/cost/current"
@@ -98,16 +89,7 @@ class CloudHealth(object):
 
         items_list = api_call["dimensions"][1]["AWS-Service-Category"]
 
-        if aws_account_input is None:
-            total_data = self._get_total_data(api_call, items_list, aws_accounts_list)
-            return total_data
-
-        if aws_account_input not in aws_accounts_list:
-            raise ValueError("Invalid AWS account input.")
-
-        aws_account_index = aws_accounts_list.index(aws_account_input)
-        aws_account_info = self._get_data_info(api_call, items_list, aws_account_input, aws_account_index)
-        return aws_account_info
+        return self._get_data(api_call, items_list, aws_accounts_list, aws_account_input, "AWS account")
 
     def _get_api_call(self, report, api_key):
         uri_args = {'api_key': api_key}
@@ -117,6 +99,16 @@ class CloudHealth(object):
         if api_call.get('error'):
             raise ValueError(api_call['error'])
         return api_call
+
+    def _get_data(self, api_call, items_list, category_list, category_input, category_type):
+        if category_input is None:
+            return self._get_total_data(api_call, items_list, category_list)
+
+        if category_input not in category_list:
+            raise ValueError("Invalid {} input".format(category_type))
+
+        category_index = category_list.index(category_input)
+        return self._get_data_info(api_call, items_list, category_input, category_index)
 
     def _get_total_data(self, api_call, items_list, category_list):
         total_data = []

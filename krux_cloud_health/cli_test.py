@@ -45,8 +45,8 @@ class Application(krux.cli.Application):
         costHistory = self.cloud_health.costHistory()
         self.logger.debug(pprint.pformat(costHistory, indent=2, width=20))
 
-        #costCurrent = self.cloud_health.costCurrent()
-        #self.logger.debug(pprint.pformat(costCurrent, indent=2, width=20))
+        # costCurrent = self.cloud_health.costCurrent()
+        # self.logger.debug(pprint.pformat(costCurrent, indent=2, width=20))
 
 def main():
     app = Application()
