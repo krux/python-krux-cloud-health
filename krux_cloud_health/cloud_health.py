@@ -94,10 +94,11 @@ class CloudHealth(object):
         report = "olap_reports/cost/history"
         api_call = self._get_api_call(report, self.api_key, time_interval)
 
-        time_dict = api_call["dimensions"][0]["time"]
+        dimensions = api_call.get('dimensions', [])
+        time_dict = dimensions[0].get('time', {})
         time_list = [str(time["name"]) for time in time_dict]
 
-        items_list = api_call["dimensions"][1]["AWS-Service-Category"]
+        items_list = dimensions[1].get('AWS-Service-Category', {})
 
         return self._get_data(api_call, items_list, time_list, time_input, time_interval)
 
@@ -108,16 +109,18 @@ class CloudHealth(object):
         :argument time_input: AWS account for which data is retrieved (optional) - if not specified, will return information for all AWS accounts
         """
         report = "olap_reports/cost/current"
-        api_call = self._get_api_call(report, self.api_key)
+        api_call = self._get_api_call(report, self.api_key, None)
 
-        aws_accounts_dict = api_call["dimensions"][0]["AWS-Account"]
+        
+        dimensions = api_call.get('dimensions', [])
+        aws_accounts_dict = dimensions[0].get('AWS-Account', {})
         aws_accounts_list = [str(aws_account["label"]) for aws_account in aws_accounts_dict]
 
-        items_list = api_call["dimensions"][1]["AWS-Service-Category"]
+        items_list = dimensions[1].get('AWS-Service-Category', {})
 
         return self._get_data(api_call, items_list, aws_accounts_list, aws_account_input, "AWS account")
 
-    def _get_api_call(self, report, api_key, time_interval):
+    def _get_api_call(self, report, api_key, time_interval=None):
         """
         Returns API call for specified report and time interval using API Key.
 

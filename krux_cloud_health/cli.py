@@ -87,7 +87,6 @@ class Application(krux.cli.Application):
         except ValueError as e:
             self.logger.error(e.message)
             self.exit(1)
-        print cost_history
         for item, data in cost_history[self.date_input].iteritems():
             self.stats.incr(item, data)
 
