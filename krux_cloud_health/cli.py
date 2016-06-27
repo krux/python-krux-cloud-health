@@ -38,7 +38,7 @@ class Application(krux.cli.Application):
         try:
             self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
         except ValueError as e:
-            self.logger.warning(e.message)
+            self.logger.error(e.message)
             self.exit(1)
 
         self.interval = self.args.interval
