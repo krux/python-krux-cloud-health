@@ -16,7 +16,7 @@ from __future__ import absolute_import
 # Third party libraries
 #
 
-import datetime
+from datetime import date, timedelta
 
 #
 # Internal libraries
@@ -25,7 +25,7 @@ import datetime
 import krux.cli
 from krux.logging import get_logger
 from krux.cli import get_group
-from krux_cloud_health.cloud_health import CloudHealth, NAME, add_cloud_health_cli_arguments, get_cloud_health
+from krux_cloud_health.cloud_health import CloudHealth, NAME, INTERVAL, add_cloud_health_cli_arguments, get_cloud_health
 
 class Application(krux.cli.Application):
     def __init__(self, name=NAME):
@@ -41,39 +41,54 @@ class Application(krux.cli.Application):
             self.logger.warning(e.message)
             self.exit(1)
 
-        if self.args.curr_month:
-            today_date = datetime.date.today()
-            self.month = '{}-{}'.format(today_date.year, '%02d' % today_date.month)
+        self.interval = self.args.interval
+
+        if self.args.set_date is not None:
+            self.date_input = self.args.set_date
         else:
-            self.month = self.args.month
+            today = date.today()
+            if self.interval == 'daily':
+                self.date_input = '{}'.format(today - timedelta(days=1))
+            elif self.interval == 'monthly':
+                self.date_input = '{}-{}'.format(today.year, '%02d' % today.month)
 
     def add_cli_arguments(self, parser):
-        # Call to the superclass first
+        """
+        Add CloudHealth-related command-line arguments to the given parser.
+
+        :argument parser: parser instance to which the arguments will be added
+        """
+
         add_cloud_health_cli_arguments(parser)
 
         group = get_group(parser, self.name)
 
         group.add_argument(
-            '--month',
+            '--interval',
             type=str,
-            default='total',
-            help="Retrieve cost history data for specific month from the past 12 months. Must be in 'YYYY-MM' format.",
+            choices=INTERVAL,
+            default='daily',
+            help="Set time interval of data (default: %(default)s)",
         )
 
         group.add_argument(
-            '--curr-month',
-            action='store_true',
-            help="Retrieve cost history data for current month.",
+            '--set-date',
+            type=str,
+            default=None,
+            help="Retrieve cost history data for specific day ('YYYY-MM-DD') or month ('YYYY-MM'), depending on interval.",
         )
 
     def run(self):
         try:
-            costHistory = self.cloud_health.costHistory(self.month)
+            if self.interval == 'daily':
+                cost_history = self.cloud_health.cost_history_day(self.date_input)
+            elif self.interval == 'monthly':
+                cost_history = self.cloud_health.cost_history_month(self.date_input)
         except ValueError as e:
             self.logger.error(e.message)
             self.exit(1)
-
-        for item, data in costHistory[self.month].iteritems():
+        print cost_history
+        for item, data in cost_history[self.date_input].iteritems():
             self.stats.incr(item, data)
 
 

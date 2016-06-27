@@ -41,12 +41,14 @@ class Application(krux.cli.Application):
         # Call to the superclass first
         add_cloud_health_cli_arguments(parser)
 
-    def run(self):
-        costHistory = self.cloud_health.costHistory()
-        self.logger.debug(pprint.pformat(costHistory, indent=2, width=20))
+        group = get_group(parser, self.name)
 
-        # costCurrent = self.cloud_health.costCurrent()
-        # self.logger.debug(pprint.pformat(costCurrent, indent=2, width=20))
+    def run(self):
+        cost_history = self.cloud_health.cost_history_day("2016-06-23")
+        self.logger.debug(pprint.pformat(cost_history, indent=2, width=20))
+
+        # cost_current = self.cloud_health.cost_current()
+        # self.logger.debug(pprint.pformat(cost_current, indent=2, width=20))
 
 def main():
     app = Application()
