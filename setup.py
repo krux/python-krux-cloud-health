@@ -12,7 +12,7 @@ from __future__ import absolute_import
 from setuptools import setup, find_packages
 
 # We use the version to construct the DOWNLOAD_URL.
-VERSION  = '0.0.1'
+VERSION  = '0.0.2'
 
 # URL to the repository on Github.
 REPO_URL = 'https://github.com/krux/python-krux-cloud-health'
@@ -35,7 +35,8 @@ setup(
     install_requires=[],
     entry_points={
         'console_scripts': [
-            'Cloud-API-script=krux_cloud_health.CloudAPI:main',
+            'krux-cloud-health-script=krux_cloud_health.cli:main',
+            'krux-cloud-health-test=krux_cloud_health.cli_test:main', 
         ],
     },
 )
