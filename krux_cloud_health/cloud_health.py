@@ -46,7 +46,7 @@ def add_cloud_health_cli_arguments(parser):
 def get_cloud_health(args, logger, stats):
     if not args:
         parser = get_parser(description=NAME)
-        add_dns_cli_arguments(parser)
+        add_cloud_health_cli_arguments(parser)
         args = parser.parse_args()
 
     if not logger:
@@ -151,7 +151,7 @@ class CloudHealth(object):
             return self._get_total_data(api_call, items_list, category_list)
 
         if category_input not in category_list:
-            raise ValueError("Invalid {} input".format(category_type))
+            raise ValueError("Invalid {0} input".format(category_type))
 
         category_index = category_list.index(category_input)
         return self._get_data_info(api_call, items_list, category_input, category_index)

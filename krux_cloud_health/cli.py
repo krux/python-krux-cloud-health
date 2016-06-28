@@ -48,9 +48,9 @@ class Application(krux.cli.Application):
         else:
             today = date.today()
             if self.interval == 'daily':
-                self.date_input = '{}'.format(today - timedelta(days=1))
+                self.date_input = '{0}'.format(today - timedelta(days=1))
             elif self.interval == 'monthly':
-                self.date_input = '{}-{}'.format(today.year, '%02d' % today.month)
+                self.date_input = '{0}-{0}'.format(today.year, '%02d' % today.month)
 
     def add_cli_arguments(self, parser):
         """
@@ -87,6 +87,7 @@ class Application(krux.cli.Application):
         except ValueError as e:
             self.logger.error(e.message)
             self.exit(1)
+
         for item, data in cost_history[self.date_input].iteritems():
             self.stats.incr(item, data)
 
