@@ -50,7 +50,7 @@ class Application(krux.cli.Application):
             if self.interval == 'daily':
                 self.date_input = '{0}'.format(today - timedelta(days=1))
             elif self.interval == 'monthly':
-                self.date_input = '{0}-{0}'.format(today.year, '%02d' % today.month)
+                self.date_input = '{0}-{1}'.format(today.year, '%02d' % today.month)
 
     def add_cli_arguments(self, parser):
         """
