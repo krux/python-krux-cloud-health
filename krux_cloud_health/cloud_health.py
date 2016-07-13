@@ -19,6 +19,7 @@ import urlparse
 #
 
 import requests
+from enum import Enum
 
 #
 # Internal libraries
@@ -29,7 +30,13 @@ from krux.cli import get_parser, get_group
 
 API_ENDPOINT = "https://apps.cloudhealthtech.com/"
 NAME = "cloud-health-tech"
-INTERVAL = ['daily', 'monthly']
+
+
+class Interval(Enum):
+    hourly = 1
+    daily = 2
+    weekly = 3
+    monthly = 4
 
 
 def add_cloud_health_cli_arguments(parser):
@@ -68,23 +75,7 @@ class CloudHealth(object):
         self.logger = logger
         self.stats = stats
 
-    def cost_history_month(self, month_input=None):
-        """
-        Cost history for specified month.
-
-        :argument month_input: month for which data is retrieved (optional)
-        """
-        return self._cost_history("monthly", month_input)
-
-    def cost_history_day(self, day_input=None):
-        """
-        Cost history for specified day.
-
-        :argument month_input: month for which data is retrieved (optional)
-        """
-        return self._cost_history("daily", day_input)
-
-    def _cost_history(self, time_interval, time_input):
+    def cost_history(self, time_interval, time_input=None):
         """
         Cost history for specified time interval and input.
     
@@ -100,7 +91,7 @@ class CloudHealth(object):
 
         items_list = dimensions[1].get('AWS-Service-Category', {})
 
-        return self._get_data(api_call, items_list, time_list, time_input, time_interval)
+        return self._get_data(api_call, items_list, time_list, time_interval, time_input)
 
     def cost_current(self, aws_account_input=None):
         """
@@ -128,7 +119,7 @@ class CloudHealth(object):
         :argument api_key: API allows data to be retrieved
         :argument time_interval: Filters data from API call for specific time interval
         """
-        uri_args = {'api_key': api_key, 'interval': time_interval}
+        uri_args = {'api_key': api_key, 'interval': time_interval.name}
         uri = urlparse.urljoin(API_ENDPOINT, report)
         r = requests.get(uri, params=uri_args)
         api_call = r.json()
@@ -136,7 +127,7 @@ class CloudHealth(object):
             raise ValueError(api_call['error'])
         return api_call
 
-    def _get_data(self, api_call, items_list, category_list, category_input, category_type):
+    def _get_data(self, api_call, items_list, category_list, category_type, category_input=None):
         """
         Retrieves data from API call for 
 

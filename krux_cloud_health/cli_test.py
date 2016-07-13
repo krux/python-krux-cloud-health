@@ -47,8 +47,11 @@ class Application(krux.cli.Application):
         # cost_history = self.cloud_health.cost_history_day("2016-06-23")
         # self.logger.debug(pprint.pformat(cost_history, indent=2, width=20))
 
-        cost_current = self.cloud_health.cost_current()
-        self.logger.debug(pprint.pformat(cost_current, indent=2, width=20))
+        cost_history = self.cloud_health.cost_history("weekly")
+        self.logger.debug(pprint.pformat(cost_history, indent=2, width=20))
+
+        # cost_current = self.cloud_health.cost_current()
+        # self.logger.debug(pprint.pformat(cost_current, indent=2, width=20))
 
 def main():
     app = Application()
