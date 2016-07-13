@@ -71,7 +71,7 @@ class Application(krux.cli.Application):
             '--set-date',
             type=str,
             default=None,
-            help="Retrieve cost history data for specific date, depending on interval. (ex: 'YYYY-MM-DD' for day)",
+            help="Retrieve cost history data for specific date, depending on interval. (ex: 'YYYY-MM-DD' for daily)",
         )
 
     def run(self):
