@@ -77,9 +77,14 @@ class Application(krux.cli.Application):
     def run(self):
         try:
             cost_history = self.cloud_health.cost_history(self.interval)
+
+            # If no date_input, cost_data is most recent data available for given time interval in cost_history
             if self.date_input is None:
                 cost_data = cost_history.pop()
-                self.date_input = cost_data.keys()[0]
+                for item, data in cost_data[cost_data.keys()[0]]:
+                    self.stats.incr(item, data)
+                self.exit(1)
+            # If date_input provided, search through cost_history until dictionary corresponding to date_input is found
             else:
                 cost_data = [cost_history[i] for i in range(len(cost_history)) if cost_history[i].keys()[0] == self.date_input][0]
         except (ValueError, IndexError) as e:
