@@ -20,7 +20,7 @@ import pprint
 import krux.cli
 from krux.cli import get_group
 from krux.logging import get_logger
-from krux_cloud_health.cloud_health import CloudHealth, NAME, add_cloud_health_cli_arguments, get_cloud_health
+from krux_cloud_health.cloud_health import CloudHealth, Interval, NAME, add_cloud_health_cli_arguments, get_cloud_health
 
 
 class Application(krux.cli.Application):
@@ -44,11 +44,11 @@ class Application(krux.cli.Application):
         group = get_group(parser, self.name)
 
     def run(self):
-        # cost_history = self.cloud_health.cost_history_day("2016-06-23")
-        # self.logger.debug(pprint.pformat(cost_history, indent=2, width=20))
+        cost_history = self.cloud_health.cost_history(Interval.weekly)
+        self.logger.debug(pprint.pformat(cost_history, indent=2, width=20))
 
-        cost_current = self.cloud_health.cost_current()
-        self.logger.debug(pprint.pformat(cost_current, indent=2, width=20))
+        # cost_current = self.cloud_health.cost_current()
+        # self.logger.debug(pprint.pformat(cost_current, indent=2, width=20))
 
 def main():
     app = Application()
