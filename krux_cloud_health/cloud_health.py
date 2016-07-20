@@ -42,7 +42,7 @@ class Interval(Enum):
 def add_cloud_health_cli_arguments(parser):
     # Add those specific to the application
     group = get_group(parser, NAME)
-    
+
     group.add_argument(
         'api_key',
         type=str,
@@ -78,12 +78,13 @@ class CloudHealth(object):
     def cost_history(self, time_interval, time_input=None):
         """
         Cost history for specified time interval and input.
-    
+
         :argument time_interval: time interval for which data is retrieved
         :argument time_input: date for which data is retrieved (optional) - if not specified, returns 'total'
         """
         report = "olap_reports/cost/history"
-        api_call = self._get_api_call(report, self.api_key, time_interval)
+        params = {'interval': time_interval.name, 'filters[]': 'time:select:{0}'.format(time_input)}
+        api_call = self._get_api_call(report, self.api_key, params)
 
         dimensions = api_call.get('dimensions', [])
         time_dict = dimensions[0].get('time', {})
@@ -100,9 +101,9 @@ class CloudHealth(object):
         :argument time_input: AWS account for which data is retrieved (optional) - if not specified, will return information for all AWS accounts
         """
         report = "olap_reports/cost/current"
-        api_call = self._get_api_call(report, self.api_key, None)
+        api_call = self._get_api_call(report, self.api_key)
 
-        
+
         dimensions = api_call.get('dimensions', [])
         aws_accounts_dict = dimensions[0].get('AWS-Account', {})
         aws_accounts_list = [str(aws_account["label"]) for aws_account in aws_accounts_dict]
@@ -111,7 +112,7 @@ class CloudHealth(object):
 
         return self._get_data(api_call, items_list, aws_accounts_list, aws_account_input, "AWS account")
 
-    def _get_api_call(self, report, api_key, time_interval=None):
+    def _get_api_call(self, report, api_key, params={}):
         """
         Returns API call for specified report and time interval using API Key.
 
@@ -119,7 +120,8 @@ class CloudHealth(object):
         :argument api_key: API allows data to be retrieved
         :argument time_interval: Filters data from API call for specific time interval
         """
-        uri_args = {'api_key': api_key, 'interval': time_interval.name}
+        uri_args = {'api_key': api_key}
+        uri_args.update(params)
         uri = urlparse.urljoin(API_ENDPOINT, report)
         r = requests.get(uri, params=uri_args)
         api_call = r.json()
@@ -129,7 +131,7 @@ class CloudHealth(object):
 
     def _get_data(self, api_call, items_list, category_list, category_type, category_input=None):
         """
-        Retrieves data from API call for 
+        Retrieves data from API call for
 
         :argument api_call: API call with information
         :argument items_list: Items retrieved from API call
@@ -145,7 +147,7 @@ class CloudHealth(object):
             raise ValueError("Invalid {0} input".format(category_type))
 
         category_index = category_list.index(category_input)
-        return self._get_data_info(api_call, items_list, category_input, category_index)
+        return [self._get_data_info(api_call, items_list, category_input, category_index)]
 
     def _get_total_data(self, api_call, items_list, category_list):
         """
