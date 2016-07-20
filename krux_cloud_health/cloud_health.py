@@ -103,7 +103,6 @@ class CloudHealth(object):
         report = "olap_reports/cost/current"
         api_call = self._get_api_call(report, self.api_key)
 
-
         dimensions = api_call.get('dimensions', [])
         aws_accounts_dict = dimensions[0].get('AWS-Account', {})
         aws_accounts_list = [str(aws_account["label"]) for aws_account in aws_accounts_dict]
