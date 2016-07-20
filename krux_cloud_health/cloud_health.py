@@ -13,6 +13,7 @@ Class to retrieve data from Cloud Health Tech API
 from __future__ import absolute_import
 import sys
 import urlparse
+import pprint
 
 #
 # Third party libraries
@@ -83,16 +84,14 @@ class CloudHealth(object):
         :argument time_input: date for which data is retrieved (optional) - if not specified, returns 'total'
         """
         report = "olap_reports/cost/history"
-        params = {'interval': time_interval.name, 'filters[]': 'time:select:{0}'.format(time_input)}
+        params = {'interval': time_interval.name}
+
+        if time_input is not None:
+            params['filters[]'] = 'time:select:{0}'.format(time_input)
+
         api_call = self._get_api_call(report, self.api_key, params)
 
-        dimensions = api_call.get('dimensions', [])
-        time_dict = dimensions[0].get('time', {})
-        time_list = [str(time["name"]) for time in time_dict]
-
-        items_list = dimensions[1].get('AWS-Service-Category', {})
-
-        return self._get_data(api_call, items_list, time_list, time_interval, time_input)
+        return self._get_data(api_call, 'time', time_input)
 
     def cost_current(self, aws_account_input=None):
         """
@@ -103,13 +102,7 @@ class CloudHealth(object):
         report = "olap_reports/cost/current"
         api_call = self._get_api_call(report, self.api_key)
 
-        dimensions = api_call.get('dimensions', [])
-        aws_accounts_dict = dimensions[0].get('AWS-Account', {})
-        aws_accounts_list = [str(aws_account["label"]) for aws_account in aws_accounts_dict]
-
-        items_list = dimensions[1].get('AWS-Service-Category', {})
-
-        return self._get_data(api_call, items_list, aws_accounts_list, aws_account_input, "AWS account")
+        return self._get_data(api_call, 'AWS-Account', aws_account_input,)
 
     def _get_api_call(self, report, api_key, params={}):
         """
@@ -121,29 +114,38 @@ class CloudHealth(object):
         """
         uri_args = {'api_key': api_key}
         uri_args.update(params)
+
         uri = urlparse.urljoin(API_ENDPOINT, report)
+
         r = requests.get(uri, params=uri_args)
         api_call = r.json()
+
         if api_call.get('error'):
             raise ValueError(api_call['error'])
+
+        self.logger.debug(pprint.pformat(api_call))
+
         return api_call
 
-    def _get_data(self, api_call, items_list, category_list, category_type, category_input=None):
+    def _get_data(self, api_call, category_name, category_input=None):
         """
         Retrieves data from API call for
 
         :argument api_call: API call with information
-        :argument items_list: Items retrieved from API call
-        :argument category_list: Categories retrieved from API call
         :argument category_input: Specifies category_input to retrieve from category_list (optional) - if not specified, retrieves info from all categories
-        :argument category_type: Type of data in category_list
         """
+        # GOTCHA: Default with two empty dictionaries so lists can be retrieved
+        dimensions = api_call.get('dimensions', [{}, {}])
+
+        category_list = [str(category['label']) for category in dimensions[0].get(category_name, {})]
+
+        items_list = dimensions[1].get('AWS-Service-Category', {})
 
         if category_input is None:
             return self._get_total_data(api_call, items_list, category_list)
 
         if category_input not in category_list:
-            raise ValueError("Invalid {0} input".format(category_type))
+            raise ValueError("Invalid category input: {0}".format(category_input))
 
         category_index = category_list.index(category_input)
         return [self._get_data_info(api_call, items_list, category_input, category_index)]
