@@ -132,6 +132,7 @@ class CloudHealth(object):
         Retrieves data from API call for
 
         :argument api_call: API call with information
+        :argument category_name: Key of the first dimension (i.e. 'time' or 'AWS-Account')
         :argument category_input: Specifies category_input to retrieve from category_list (optional) - if not specified, retrieves info from all categories
         """
         # GOTCHA: Default with two empty dictionaries so lists can be retrieved
