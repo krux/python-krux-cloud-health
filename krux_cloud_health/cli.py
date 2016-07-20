@@ -11,6 +11,7 @@ CLI tools for accessing Krux Cloud Health Tech
 #
 
 from __future__ import absolute_import
+import pprint
 
 #
 # Third party libraries
@@ -77,17 +78,18 @@ class Application(krux.cli.Application):
     def run(self):
         try:
             cost_history = self.cloud_health.cost_history(self.interval, self.date_input)
-
-            # If no date_input, cost_data is most recent data available for given time interval in cost_history
-            if self.date_input is None:
-                cost_data = cost_history.pop()
-                self.date_input = cost_data.keys()[0]
-            # If date_input provided, search through cost_history until dictionary corresponding to date_input is found
-            else:
-                cost_data = [cost_history[i] for i in range(len(cost_history)) if cost_history[i].keys()[0] == self.date_input][0]
+            self.logger.debug(pprint.pformat(cost_history))
         except (ValueError, IndexError) as e:
             self.logger.error(e.message)
             self.exit(1)
+
+        # If no date_input, cost_data is most recent data available for given time interval in cost_history
+        if self.date_input is None:
+            cost_data = cost_history.pop()
+            self.date_input = cost_data.keys()[0]
+        # If date_input provided, search through cost_history until dictionary corresponding to date_input is found
+        else:
+            cost_data = [cost_history[i] for i in range(len(cost_history)) if cost_history[i].keys()[0] == self.date_input][0]
 
         for item, data in cost_data[self.date_input].iteritems():
             self.stats.incr(item, data)
