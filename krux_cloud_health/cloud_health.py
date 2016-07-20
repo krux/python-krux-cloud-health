@@ -127,39 +127,31 @@ class CloudHealth(object):
 
         return api_call
 
-    def _get_data(self, api_call, category_name, category_input=None):
+    def _get_data(self, api_call, category_type, category_name=None):
         """
         Retrieves data from API call for
 
         :argument api_call: API call with information
-        :argument category_name: Key of the first dimension (i.e. 'time' or 'AWS-Account')
-        :argument category_input: Specifies category_input to retrieve from category_list (optional) - if not specified, retrieves info from all categories
+        :argument category_type: Key of the first dimension (i.e. 'time' or 'AWS-Account')
+        :argument category_name: Specifies category_name to retrieve from category_list (optional) - if not specified, retrieves info from all categories
         """
         # GOTCHA: Default with two empty dictionaries so lists can be retrieved
         dimensions = api_call.get('dimensions', [{}, {}])
 
-        category_list = [str(category['label']) for category in dimensions[0].get(category_name, {})]
+        categories = [
+            str(category.get('label'))
+            for category in dimensions[0].get(category_type, {})
+            if category_name is None or category_name == category.get('label')
+        ]
 
-        items_list = dimensions[1].get('AWS-Service-Category', {})
+        services = dimensions[1].get('AWS-Service-Category', {})
 
-        if category_input is None:
-            return self._get_total_data(api_call, items_list, category_list)
-
-        if category_input not in category_list:
-            raise ValueError("Invalid category input: {0}".format(category_input))
-
-        category_index = category_list.index(category_input)
-        return [self._get_data_info(api_call, items_list, category_input, category_index)]
-
-    def _get_total_data(self, api_call, items_list, category_list):
-        """
-        Retrieves information for all entries in category_list.
-        """
         total_data = []
-        for index in range(len(category_list)):
-            category = category_list[index]
-            category_info = self._get_data_info(api_call, items_list, category, index)
+        for index in range(len(categories)):
+            category = categories[index]
+            category_info = self._get_data_info(api_call, services, category, index)
             total_data.append(category_info)
+
         return total_data
 
     def _get_data_info(self, api_call, items_list, category_input, index):
