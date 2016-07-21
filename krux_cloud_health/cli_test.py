@@ -20,35 +20,30 @@ import pprint
 import krux.cli
 from krux.cli import get_group
 from krux.logging import get_logger
-from krux_cloud_health.cloud_health import CloudHealth, Interval, NAME, add_cloud_health_cli_arguments, get_cloud_health
+from krux_cloud_health.cloud_health import Interval, NAME, add_cloud_health_cli_arguments, get_cloud_health
 
 
 class Application(krux.cli.Application):
-    def __init__(self, name=NAME):
 
+    def __init__(self, name=NAME):
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)
 
-        self.logger = get_logger(name)
-
-        try:
-            self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
-        except ValueError as e:
-            self.logger.error(e.message)
-            self.exit(1)
+        self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
 
     def add_cli_arguments(self, parser):
         # Call to the superclass first
-        add_cloud_health_cli_arguments(parser)
+        super(Application, self).add_cli_arguments(parser)
 
-        group = get_group(parser, self.name)
+        add_cloud_health_cli_arguments(parser)
 
     def run(self):
         cost_history = self.cloud_health.cost_history(Interval.weekly)
-        self.logger.debug(pprint.pformat(cost_history, indent=2, width=20))
+        self.logger.info(pprint.pformat(cost_history, indent=2, width=20))
 
-        # cost_current = self.cloud_health.cost_current()
-        # self.logger.debug(pprint.pformat(cost_current, indent=2, width=20))
+        cost_current = self.cloud_health.cost_current()
+        self.logger.info(pprint.pformat(cost_current, indent=2, width=20))
+
 
 def main():
     app = Application()
