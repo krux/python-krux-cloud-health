@@ -22,25 +22,17 @@ import pprint
 # Internal libraries
 #
 
-import krux.cli
-from krux.logging import get_logger
 from krux.cli import get_group
-from krux_cloud_health.cloud_health import CloudHealth, Interval, NAME, add_cloud_health_cli_arguments, get_cloud_health
+from krux_cloud_health.cloud_health import Interval, NAME
+import krux_cloud_health.cli_test
 
 
-class Application(krux.cli.Application):
+class Application(krux_cloud_health.cli_test.Application):
+
     def __init__(self, name=NAME):
 
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)
-
-        self.logger = get_logger(name)
-
-        try:
-            self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
-        except ValueError as e:
-            self.logger.error(e.message)
-            self.exit(1)
 
         self.interval = Interval[self.args.interval]
 
@@ -50,8 +42,8 @@ class Application(krux.cli.Application):
 
         :argument parser: parser instance to which the arguments will be added
         """
-
-        add_cloud_health_cli_arguments(parser)
+        # Call to the superclass first
+        super(Application, self).add_cli_arguments(parser)
 
         group = get_group(parser, self.name)
 
