@@ -44,11 +44,6 @@ class Application(krux.cli.Application):
 
         self.interval = Interval[self.args.interval]
 
-        if self.args.set_date is not None:
-            self.date_input = self.args.set_date
-        else:
-            self.date_input = None
-
     def add_cli_arguments(self, parser):
         """
         Add CloudHealth-related command-line arguments to the given parser.
@@ -77,21 +72,23 @@ class Application(krux.cli.Application):
 
     def run(self):
         try:
-            cost_history = self.cloud_health.cost_history(self.interval, self.date_input)
+            cost_history = self.cloud_health.cost_history(self.interval, self.args.set_date)
             self.logger.debug(pprint.pformat(cost_history))
         except (ValueError, IndexError) as e:
             self.logger.error(e.message)
             self.exit(1)
 
-        # If no date_input, cost_data is most recent data available for given time interval in cost_history
-        if self.date_input is None:
-            cost_data = cost_history.pop()
-            self.date_input = cost_data.keys()[0]
-        # If date_input provided, search through cost_history until dictionary corresponding to date_input is found
-        else:
-            cost_data = [cost_history[i] for i in range(len(cost_history)) if cost_history[i].keys()[0] == self.date_input][0]
+        # If no set_date, cost_data is most recent data available for given time interval in cost_history
+        if self.args.set_date is None:
+            cost_history.pop('Total')
+            last_key = sorted(cost_history.keys())[-1]
+            self.logger.info('Determined %s is the most recent time with data' % last_key)
 
-        for item, data in cost_data[self.date_input].iteritems():
+            cost_data = cost_history[last_key]
+        else:
+            cost_data = cost_history.values()[0]
+
+        for item, data in cost_data.iteritems():
             self.stats.incr(item, data)
 
 

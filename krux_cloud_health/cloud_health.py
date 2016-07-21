@@ -146,11 +146,11 @@ class CloudHealth(object):
 
         services = dimensions[1].get('AWS-Service-Category', {})
 
-        total_data = []
+        total_data = {}
         for index in range(len(categories)):
             category = categories[index]
             category_info = self._get_data_info(api_call, services, category, index)
-            total_data.append(category_info)
+            total_data.update(category_info)
 
         return total_data
 
@@ -158,6 +158,7 @@ class CloudHealth(object):
         """
         Retrieves information for specific entry in category_list.
         """
+        # TODO: Refactor this to be cleaner
         info = {category_input: {}}
         data_nested = api_call["data"][index]
         data_list = [data for sublist in data_nested for data in sublist]
