@@ -29,7 +29,6 @@ from enum import Enum
 from krux.cli import get_parser, get_group
 
 
-API_ENDPOINT = "https://apps.cloudhealthtech.com/"
 NAME = "cloud-health-tech"
 
 
@@ -71,6 +70,10 @@ def get_cloud_health(args, logger, stats):
 
 
 class CloudHealth(object):
+    _API_ENDPOINT = "https://apps.cloudhealthtech.com/"
+    _CATEGORY_DIMENSION_INDEX = 0
+    _SERVICE_DIMENSION_INDEX = 1
+
     def __init__(self, api_key, logger, stats):
         self.api_key = api_key
         self.logger = logger
@@ -115,7 +118,7 @@ class CloudHealth(object):
         uri_args = {'api_key': api_key}
         uri_args.update(params)
 
-        uri = urlparse.urljoin(API_ENDPOINT, report)
+        uri = urlparse.urljoin(self._API_ENDPOINT, report)
 
         r = requests.get(uri, params=uri_args)
         api_call = r.json()
@@ -140,11 +143,11 @@ class CloudHealth(object):
 
         categories = [
             str(category.get('label'))
-            for category in dimensions[0].get(category_type, {})
+            for category in dimensions[self._CATEGORY_DIMENSION_INDEX].get(category_type, {})
             if category_name is None or category_name == category.get('label')
         ]
 
-        services = dimensions[1].get('AWS-Service-Category', {})
+        services = dimensions[self._SERVICE_DIMENSION_INDEX].get('AWS-Service-Category', {})
 
         total_data = {}
         for index in range(len(categories)):
