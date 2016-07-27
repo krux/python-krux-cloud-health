@@ -25,6 +25,7 @@ from krux_cloud_health.cli import Application, main
 from krux_cloud_health.cloud_health import Interval, NAME
 from krux.stats import DummyStatsClient
 
+
 class CLItest(unittest.TestCase):
 
     NAME = 'cloud-health-tech'
@@ -65,58 +66,18 @@ class CLItest(unittest.TestCase):
         CLI Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
         """
         self.mock_get_cloud_health.cost_history.return_value = {
-            'dimensions': [
-                {
-                    'time': [
-                        {'name': '2016-05'},
-                        {'name': '2016-06'}
-                    ]
-                },
-                {
-                    'AWS-Service-Category': [
-                        {'label': 'Label-1'},
-                        {'label': 'Label-2'}
-                    ]
-                }
-            ],
-            'data': [
-                [
-                    ['a'],
-                    ['b']
-                ],
-                [
-                    ['c'],
-                    ['d']
-                ]
-            ]
+            'Total': {'key': 'value'},
+            '2016-05-01': {'key': 'value'},
+            '2016-06-01': {'key': 'value'},
+            '2016-07-01': {'key': 'value'}
         }
 
-        self.mock_get_cloud_health.cost_current.return_value = {
-            'dimensions': [
-                {
-                    'AWS-Account': [
-                        {'name': 'Krux Ops'},
-                        {'name': 'Krux IT'}
-                    ]
-                },
-                {
-                    'AWS-Service-Category': [
-                        {'label': 'Label-1'},
-                        {'label': 'Label-2'}
-                    ]
-                }
-            ],
-            'data': [
-                [
-                    ['a'],
-                    ['b']
-                ],
-                [
-                    ['c'],
-                    ['d']
-                ]
-            ]
+        self.mock_get_cloud_health.cost_current.return_value =  {
+            'Total': {'key': 'value'},
+            'Krux IT': {'key': 'value'},
+            'Krux Ops': {'key': 'value'}
         }
+
         self.app.run()
         self.mock_get_cloud_health.cost_current.called_once_with(Interval.weekly)
         self.mock_get_cloud_health.cost_current.called_once_with("Krux IT")
