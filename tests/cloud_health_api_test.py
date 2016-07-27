@@ -55,12 +55,8 @@ class CloudHealthAPITest(unittest.TestCase):
         self.assertEqual(Interval.daily.name, self.app.args.interval)
         self.assertIsNone(self.app.args.set_date)
 
-    # @patch('sys.argv', ['api-key', '12345', '--set-date', '2016-05-01'])
-    # def test_run_with_set_date(self):
-
     def test_run_error(self):
         self.app.cloud_health.cost_history = MagicMock(side_effect=ValueError('Error message'))
-        # self.app.cloud_health.cost_history.side_effect = ValueError('Error message')
         self.app.run()
         self.app.logger.error.assert_called_once_with('Error message')
 
