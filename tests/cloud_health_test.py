@@ -61,6 +61,15 @@ class CloudHealthTest(unittest.TestCase):
             {'interval': 'daily', 'filters[]': 'time:select:time_input'},
             )
 
+    def test_cost_history_no_time_input(self):
+        self.cloud_health._get_api_call = MagicMock()
+        cost_history = self.cloud_health.cost_history(Interval['daily'])
+        self.cloud_health._get_api_call.assert_called_once_with(
+            CloudHealthTest.COST_HISTORY_REPORT,
+            CloudHealthTest.API_KEY,
+            {'interval': 'daily'},
+            )
+
     def test_cost_current(self):
         self.cloud_health._get_api_call = MagicMock()
         cost_current = self.cloud_health.cost_current()
@@ -112,5 +121,8 @@ class CloudHealthTest(unittest.TestCase):
                 ]
             ]
         }
-        get_data_info = self.cloud_health._get_data_info(api_call, [{'label': 'service', 'parent': 1}], 'Total', 0)
+        get_data_info = self.cloud_health._get_data_info(
+            api_call,
+            [{'label': 'service1', 'parent': 1}, {'label': 'Total', 'parent': 0}],
+            'Total', 0)
         self.assertEqual(get_data_info, {'Total': {'service': 100}})
