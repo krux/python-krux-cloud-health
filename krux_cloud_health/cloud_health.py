@@ -13,6 +13,7 @@ Class to retrieve data from Cloud Health Tech API
 from __future__ import absolute_import
 import sys
 import urlparse
+import pprint
 
 #
 # Third party libraries
@@ -28,7 +29,6 @@ from enum import Enum
 from krux.cli import get_parser, get_group
 
 
-API_ENDPOINT = "https://apps.cloudhealthtech.com/"
 NAME = "cloud-health-tech"
 
 
@@ -42,7 +42,7 @@ class Interval(Enum):
 def add_cloud_health_cli_arguments(parser):
     # Add those specific to the application
     group = get_group(parser, NAME)
-    
+
     group.add_argument(
         'api_key',
         type=str,
@@ -70,6 +70,10 @@ def get_cloud_health(args, logger, stats):
 
 
 class CloudHealth(object):
+    _API_ENDPOINT = "https://apps.cloudhealthtech.com/"
+    _CATEGORY_DIMENSION_INDEX = 0
+    _SERVICE_DIMENSION_INDEX = 1
+
     def __init__(self, api_key, logger, stats):
         self.api_key = api_key
         self.logger = logger
@@ -78,20 +82,19 @@ class CloudHealth(object):
     def cost_history(self, time_interval, time_input=None):
         """
         Cost history for specified time interval and input.
-    
+
         :argument time_interval: time interval for which data is retrieved
         :argument time_input: date for which data is retrieved (optional) - if not specified, returns 'total'
         """
         report = "olap_reports/cost/history"
-        api_call = self._get_api_call(report, self.api_key, time_interval)
+        params = {'interval': time_interval.name}
 
-        dimensions = api_call.get('dimensions', [])
-        time_dict = dimensions[0].get('time', {})
-        time_list = [str(time["name"]) for time in time_dict]
+        if time_input is not None:
+            params['filters[]'] = 'time:select:{0}'.format(time_input)
 
-        items_list = dimensions[1].get('AWS-Service-Category', {})
+        api_call = self._get_api_call(report, self.api_key, params)
 
-        return self._get_data(api_call, items_list, time_list, time_interval, time_input)
+        return self._get_data(api_call, 'time', time_input)
 
     def cost_current(self, aws_account_input=None):
         """
@@ -100,18 +103,11 @@ class CloudHealth(object):
         :argument time_input: AWS account for which data is retrieved (optional) - if not specified, will return information for all AWS accounts
         """
         report = "olap_reports/cost/current"
-        api_call = self._get_api_call(report, self.api_key, None)
+        api_call = self._get_api_call(report, self.api_key)
 
-        
-        dimensions = api_call.get('dimensions', [])
-        aws_accounts_dict = dimensions[0].get('AWS-Account', {})
-        aws_accounts_list = [str(aws_account["label"]) for aws_account in aws_accounts_dict]
+        return self._get_data(api_call, 'AWS-Account', aws_account_input,)
 
-        items_list = dimensions[1].get('AWS-Service-Category', {})
-
-        return self._get_data(api_call, items_list, aws_accounts_list, aws_account_input, "AWS account")
-
-    def _get_api_call(self, report, api_key, time_interval=None):
+    def _get_api_call(self, report, api_key, params={}):
         """
         Returns API call for specified report and time interval using API Key.
 
@@ -119,49 +115,53 @@ class CloudHealth(object):
         :argument api_key: API allows data to be retrieved
         :argument time_interval: Filters data from API call for specific time interval
         """
-        uri_args = {'api_key': api_key, 'interval': time_interval.name}
-        uri = urlparse.urljoin(API_ENDPOINT, report)
+        uri_args = {'api_key': api_key}
+        uri_args.update(params)
+
+        uri = urlparse.urljoin(self._API_ENDPOINT, report)
+
         r = requests.get(uri, params=uri_args)
         api_call = r.json()
+
         if api_call.get('error'):
             raise ValueError(api_call['error'])
+
+        self.logger.debug(pprint.pformat(api_call))
+
         return api_call
 
-    def _get_data(self, api_call, items_list, category_list, category_type, category_input=None):
+    def _get_data(self, api_call, category_type, category_name=None):
         """
-        Retrieves data from API call for 
+        Retrieves data from API call for
 
         :argument api_call: API call with information
-        :argument items_list: Items retrieved from API call
-        :argument category_list: Categories retrieved from API call
-        :argument category_input: Specifies category_input to retrieve from category_list (optional) - if not specified, retrieves info from all categories
-        :argument category_type: Type of data in category_list
+        :argument category_type: Key of the first dimension (i.e. 'time' or 'AWS-Account')
+        :argument category_name: Specifies category_name to retrieve from category_list (optional) - if not specified, retrieves info from all categories
         """
+        # GOTCHA: Default with two empty dictionaries so lists can be retrieved
+        dimensions = api_call.get('dimensions', [{}, {}])
 
-        if category_input is None:
-            return self._get_total_data(api_call, items_list, category_list)
+        categories = [
+            str(category.get('label'))
+            for category in dimensions[self._CATEGORY_DIMENSION_INDEX].get(category_type, {})
+            if category_name is None or category_name == category.get('label')
+        ]
 
-        if category_input not in category_list:
-            raise ValueError("Invalid {0} input".format(category_type))
+        services = dimensions[self._SERVICE_DIMENSION_INDEX].get('AWS-Service-Category', {})
 
-        category_index = category_list.index(category_input)
-        return self._get_data_info(api_call, items_list, category_input, category_index)
+        total_data = {}
+        for index in range(len(categories)):
+            category = categories[index]
+            category_info = self._get_data_info(api_call, services, category, index)
+            total_data.update(category_info)
 
-    def _get_total_data(self, api_call, items_list, category_list):
-        """
-        Retrieves information for all entries in category_list.
-        """
-        total_data = []
-        for index in range(len(category_list)):
-            category = category_list[index]
-            category_info = self._get_data_info(api_call, items_list, category, index)
-            total_data.append(category_info)
         return total_data
 
     def _get_data_info(self, api_call, items_list, category_input, index):
         """
         Retrieves information for specific entry in category_list.
         """
+        # TODO: Refactor this to be cleaner
         info = {category_input: {}}
         data_nested = api_call["data"][index]
         data_list = [data for sublist in data_nested for data in sublist]
