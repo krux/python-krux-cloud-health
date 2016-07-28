@@ -57,7 +57,8 @@ class CloudHealthAPITest(unittest.TestCase):
 
     def test_run_error(self):
         self.app.cloud_health.cost_history = MagicMock(side_effect=ValueError('Error message'))
-        self.app.run()
+        with self.assertRaises(SystemExit):
+            self.app.run()
         self.app.logger.error.assert_called_once_with('Error message')
 
     @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
