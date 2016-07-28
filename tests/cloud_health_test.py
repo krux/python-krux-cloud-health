@@ -44,6 +44,9 @@ class CloudHealthTest(unittest.TestCase):
     @patch('krux_cloud_health.cloud_health.get_parser')
     @patch('krux_cloud_health.cloud_health.CloudHealth')
     def test_get_cloud_health_no_args(self, mock_cloud_health, mock_parser, mock_logger, mock_stats):
+        """
+        Cloud Health Test: All arguments created and passed into CloudHealth if none are provided.
+        """
         mock_parser.return_value.parse_args.return_value = MagicMock(api_key=CloudHealthTest.API_KEY)
         cloud_health = get_cloud_health()
         mock_cloud_health.assert_called_once_with(
@@ -52,7 +55,11 @@ class CloudHealthTest(unittest.TestCase):
             stats=mock_stats(prefix=NAME),
             )
 
-    def test_cost_history(self):
+    def test_cost_history_time_input(self):
+        """
+        Cloud Health Test: Cost history method properly passes in arguments to Get API call method.
+        with time_input provided
+        """
         self.cloud_health._get_api_call = MagicMock()
         cost_history = self.cloud_health.cost_history(Interval['daily'], 'time_input')
         self.cloud_health._get_api_call.assert_called_once_with(
@@ -62,6 +69,10 @@ class CloudHealthTest(unittest.TestCase):
             )
 
     def test_cost_history_no_time_input(self):
+        """
+        Cloud Health Test: Cost history method properly passes in arguments to Get API call method.
+        without a specified time_input
+        """
         self.cloud_health._get_api_call = MagicMock()
         cost_history = self.cloud_health.cost_history(Interval['daily'])
         self.cloud_health._get_api_call.assert_called_once_with(
@@ -71,6 +82,9 @@ class CloudHealthTest(unittest.TestCase):
             )
 
     def test_cost_current(self):
+        """
+        Cloud Health Test: Cost current method properly passes in arguments to Get API call method.
+        """
         self.cloud_health._get_api_call = MagicMock()
         cost_current = self.cloud_health.cost_current()
         self.cloud_health._get_api_call.assert_called_once_with(
@@ -81,6 +95,9 @@ class CloudHealthTest(unittest.TestCase):
     @patch('krux_cloud_health.cloud_health.pprint.pformat')
     @patch('krux_cloud_health.cloud_health.requests')
     def test_get_api_call(self, mock_request, mock_pprint):
+        """
+        Cloud Health Test: Get API call method calls API with valid report and API key.
+        """
         api_call = {'api_call': 'return'}
         mock_request.get.return_value.json.return_value = api_call
         get_api_call = self.cloud_health._get_api_call(CloudHealthTest.COST_HISTORY_REPORT, CloudHealthTest.API_KEY)
@@ -89,12 +106,19 @@ class CloudHealthTest(unittest.TestCase):
 
     @patch('krux_cloud_health.cloud_health.requests')
     def test_get_api_call_error(self, mock_request):
+        """
+        Cloud Health Test: Get API call method throws ValueError if API returns an error.
+        """
         api_call = {'error': 'Error message'}
         mock_request.get.return_value.json.return_value = api_call
         with self.assertRaises(ValueError):
             get_api_call = self.cloud_health._get_api_call(CloudHealthTest.COST_HISTORY_REPORT, CloudHealthTest.API_KEY)
 
     def test_get_data(self):
+        """
+        Cloud Health Test: Get Data method correctly gets category and service information from API call. It then
+        passes information for each category into Get Data Info.
+        """
         api_call = {'dimensions':
             [
                 {'time': 
@@ -115,6 +139,10 @@ class CloudHealthTest(unittest.TestCase):
 
 
     def test_get_data_info(self):
+        """
+        Cloud Health Test: Get Data Info method organizes information for inputted category and
+        filters unnecessary services.
+        """
         api_call = {'data': [
                 [
                     [100]
@@ -123,6 +151,6 @@ class CloudHealthTest(unittest.TestCase):
         }
         get_data_info = self.cloud_health._get_data_info(
             api_call,
-            [{'label': 'service1', 'parent': 1}, {'label': 'Total', 'parent': 0}],
+            [{'label': 'service', 'parent': 1}, {'label': 'Total', 'parent': 0}],
             'Total', 0)
         self.assertEqual(get_data_info, {'Total': {'service': 100}})
