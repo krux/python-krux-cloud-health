@@ -86,9 +86,31 @@ class CloudHealthTest(unittest.TestCase):
             get_api_call = self.cloud_health._get_api_call(CloudHealthTest.COST_HISTORY_REPORT, CloudHealthTest.API_KEY)
 
     def test_get_data(self):
-        api_call = {}
-        # get_data = self.cloud_health._get_data(api_call, )
+        api_call = {'dimensions':
+            [
+                {'time': 
+                    [
+                        {'label': 'Total'},
+                    ]
+                },
+                {'AWS-Service-Category': 
+                    [
+                        {'label': 'service'} 
+                    ]
+                }
+            ]
+        }
+        self.cloud_health._get_data_info = MagicMock()
+        get_data = self.cloud_health._get_data(api_call, 'time')
+        self.cloud_health._get_data_info.assert_called_once_with(api_call, [{'label': 'service'}], 'Total', 0)
 
 
-    # def test_get_data_info(self):
-
+    def test_get_data_info(self):
+        api_call = {'data': [
+                [
+                    [100]
+                ]
+            ]
+        }
+        get_data_info = self.cloud_health._get_data_info(api_call, [{'label': 'service', 'parent': 1}], 'Total', 0)
+        self.assertEqual(get_data_info, {'Total': {'service': 100}})
