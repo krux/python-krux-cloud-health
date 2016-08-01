@@ -30,18 +30,20 @@ class CloudHealthAPITest(unittest.TestCase):
 
     NAME = 'cloud-health-tech'
     API_KEY = '12345'
-
-    @patch('sys.argv', ['api-key', API_KEY])
-    def setUp(self):
-        self.app = Application()
-        self.app.logger = MagicMock()
-        self.app.cloud_health.cost_history = MagicMock()
-        self.app.cloud_health.cost_history.return_value = {
+    SET_DATE = '2016-05-01'
+    MOST_RECENT_DATE = '2016-07-01'
+    COST_HISTORY_RETURN = {
             'Total': {'key': 'value'},
             '2016-05-01': {'key': 'value'},
             '2016-06-01': {'key': 'value'},
             '2016-07-01': {'key': 'value'},
         }
+
+    @patch('sys.argv', ['api-key', API_KEY])
+    def setUp(self):
+        self.app = Application()
+        self.app.logger = MagicMock()
+        self.app.cloud_health.cost_history = MagicMock(return_value=CloudHealthAPITest.COST_HISTORY_RETURN)
 
     def test_add_cli_arguments(self):
         """
@@ -57,8 +59,9 @@ class CloudHealthAPITest(unittest.TestCase):
 
     def test_run_error(self):
         self.app.cloud_health.cost_history = MagicMock(side_effect=ValueError('Error message'))
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit) as cm:
             self.app.run()
+        self.assertEqual(cm.exception.code, 1)
         self.app.logger.error.assert_called_once_with('Error message')
 
     @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
@@ -66,23 +69,30 @@ class CloudHealthAPITest(unittest.TestCase):
         """
         Cloud Health API Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
         """
+        self.app.stats = MagicMock()
         self.app.run()
         self.app.cloud_health.cost_history.assert_called_once_with(Interval['daily'], None)
         mock_pprint.assert_called_once_with(self.app.cloud_health.cost_history(time_interval='daily', time_input=None))
-        self.app.logger.info.assert_called_once_with('Determined %s is the most recent time with data' % '2016-07-01')
+        self.app.logger.debug.assert_called_once_with(mock_pprint(CloudHealthAPITest.COST_HISTORY_RETURN))
+        self.app.logger.info.assert_called_once_with('Determined %s is the most recent time with data'
+            % CloudHealthAPITest.MOST_RECENT_DATE)
+        for key, val in CloudHealthAPITest.COST_HISTORY_RETURN[CloudHealthAPITest.MOST_RECENT_DATE].items():
+            self.app.stats.incr.assert_called_once_with(key, val)
 
-    @patch('sys.argv', ['api-key', '12345', '--set-date', '2016-05-01'])
-    def test_run_with_set_date(self):
+    @patch('sys.argv', ['api-key', API_KEY, '--set-date', SET_DATE])
+    @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
+    def test_run_with_set_date(self, mock_pprint):
         app = Application()
-        app.cloud_health.cost_history = MagicMock()
-        app.cloud_health.cost_history.return_value = {
-            'Total': {'key': 'value'},
-            '2016-05-01': {'key': 'value'},
-            '2016-06-01': {'key': 'value'},
-            '2016-07-01': {'key': 'value'},
-        }
+        app.stats = MagicMock()
+        app.cloud_health.cost_history = MagicMock(return_value=CloudHealthAPITest.COST_HISTORY_RETURN)
+        app.logger = MagicMock()
         app.run()
-        app.cloud_health.cost_history.assert_called_once_with(Interval['daily'], '2016-05-01')
+        app.cloud_health.cost_history.assert_called_once_with(
+            Interval['daily'],
+            CloudHealthAPITest.SET_DATE)
+        app.logger.debug.assert_called_once_with(mock_pprint(CloudHealthAPITest.COST_HISTORY_RETURN))
+        for key, val in CloudHealthAPITest.COST_HISTORY_RETURN[CloudHealthAPITest.MOST_RECENT_DATE].items():
+            app.stats.incr.assert_called_once_with(key, val)
 
     def test_main(self):
         """

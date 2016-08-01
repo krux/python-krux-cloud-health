@@ -31,6 +31,7 @@ class CloudHealthTest(unittest.TestCase):
     API_KEY = '12345'
     COST_HISTORY_REPORT = 'olap_reports/cost/history'
     COST_CURRENT_REPORT = 'olap_reports/cost/current'
+    TIME_INPUT = 'time_input'
     
     @patch('krux_cloud_health.cloud_health.get_stats')
     @patch('krux_cloud_health.cloud_health.get_logger')
@@ -61,12 +62,21 @@ class CloudHealthTest(unittest.TestCase):
         with time_input provided
         """
         self.cloud_health._get_api_call = MagicMock()
-        cost_history = self.cloud_health.cost_history(Interval['daily'], 'time_input')
+        self.cloud_health._get_data = MagicMock()
+        cost_history = self.cloud_health.cost_history(Interval['daily'], CloudHealthTest.TIME_INPUT)
         self.cloud_health._get_api_call.assert_called_once_with(
             CloudHealthTest.COST_HISTORY_REPORT,
             CloudHealthTest.API_KEY,
             {'interval': 'daily', 'filters[]': 'time:select:time_input'},
             )
+        self.cloud_health._get_data.assert_called_once_with(
+            self.cloud_health._get_api_call(CloudHealthTest.COST_HISTORY_REPORT,
+                CloudHealthTest.API_KEY,
+                {'interval': 'daily', 'filters[]': 'time:select:time_input'}),
+                'time',
+                CloudHealthTest.TIME_INPUT
+                )
+
 
     def test_cost_history_no_time_input(self):
         """
