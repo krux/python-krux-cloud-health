@@ -30,6 +30,9 @@ class CLItest(unittest.TestCase):
 
     NAME = 'cloud-health-tech'
     API_KEY = '12345'
+    INTERVAL = Interval.weekly
+    AWS_ACCOUNT = 'Krux IT'
+
 
     @patch('krux_cloud_health.cli.get_logger')
     @patch('krux_cloud_health.cli.get_cloud_health')
@@ -61,30 +64,15 @@ class CLItest(unittest.TestCase):
         self.assertIn('api_key', self.app.args)
         self.assertEqual(self.API_KEY, self.app.args.api_key)
 
-    # @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
-    # def test_run(self, mock_pprint): #FIX
-    #     """
-    #     CLI Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
-    #     """
-    #     # self.mock_get_cloud_health.cost_history.return_value = {
-    #     #     'Total': {'key': 'value'},
-    #     #     '2016-05-01': {'key': 'value'},
-    #     #     '2016-06-01': {'key': 'value'},
-    #     #     '2016-07-01': {'key': 'value'}
-    #     # }
-
-    #     # self.mock_get_cloud_health.cost_current.return_value =  {
-    #     #     'Total': {'key': 'value'},
-    #     #     'Krux IT': {'key': 'value'},
-    #     #     'Krux Ops': {'key': 'value'}
-    #     # }
-
-    #     self.app.logger = MagicMock()
-    #     self.app.run()
-    #     # self.mock_get_cloud_health.cost_current.called_once_with(Interval.weekly)
-    #     # self.mock_get_cloud_health.cost_current.called_once_with("Krux IT")
-    #     self.app.logger.info.assert_called_once_with(self.mock_get_cloud_health.cost_history(Interval.weekly))
-    #     self.app.logger.info.assert_called_once_with(self.mock_get_cloud_health.cost_history("Krux IT"))
+    @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
+    def test_run(self, mock_pprint):
+        """
+        CLI Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
+        """
+        self.app.logger = MagicMock()
+        self.app.run()
+        self.app.logger.info.assert_called_once_with(mock_pprint(self.mock_get_cloud_health.cost_history(CLItest.INTERVAL)))
+        self.app.logger.info.assert_called_once_with(mock_pprint(self.mock_get_cloud_health.cost_history(CLItest.AWS_ACCOUNT)))
 
     def test_main(self):
         """
