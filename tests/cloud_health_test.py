@@ -56,6 +56,21 @@ class CloudHealthTest(unittest.TestCase):
             stats=mock_stats(prefix=NAME),
             )
 
+    @patch('krux_cloud_health.cloud_health.get_stats')
+    @patch('krux_cloud_health.cloud_health.get_logger')
+    @patch('krux_cloud_health.cloud_health.get_parser')
+    @patch('krux_cloud_health.cloud_health.CloudHealth')
+    def test_get_cloud_health_all_args(self, mock_cloud_health, mock_parser, mock_logger, mock_stats):
+        """
+        Cloud Health Test: All arguments created and passed into CloudHealth if none are provided.
+        """
+        cloud_health = get_cloud_health()
+        mock_cloud_health.assert_called_once_with(
+            api_key = CloudHealthTest.API_KEY,
+            logger=mock_logger(name=NAME),
+            stats=mock_stats(prefix=NAME),
+            )
+
     def test_cost_history_time_input(self):
         """
         Cloud Health Test: Cost history method properly passes in arguments to Get API call method.
@@ -146,7 +161,6 @@ class CloudHealthTest(unittest.TestCase):
         self.cloud_health._get_data_info = MagicMock()
         get_data = self.cloud_health._get_data(api_call, 'time')
         self.cloud_health._get_data_info.assert_called_once_with(api_call, [{'label': 'service'}], 'Total', 0)
-
 
     def test_get_data_info(self):
         """

@@ -32,13 +32,26 @@ class CLItest(unittest.TestCase):
     API_KEY = '12345'
     INTERVAL = Interval.weekly
     AWS_ACCOUNT = 'Krux IT'
-
+    COST_HISTORY_RV =  {
+            'Total': {'key': 'value'},
+            '2016-05-01': {'key': 'value'},
+            '2016-06-01': {'key': 'value'},
+            '2016-07-01': {'key': 'value'}
+        }
+    COST_CURRENT_RV = {
+            'Total': {'key': 'value'},
+            'Krux IT': {'key': 'value'},
+            'Krux Ops': {'key': 'value'}
+        }
 
     @patch('krux_cloud_health.cli.get_logger')
     @patch('krux_cloud_health.cli.get_cloud_health')
     @patch('sys.argv', ['api-key', API_KEY])
     def setUp(self, mock_get_cloud_health, mock_get_logger):
         self.app = Application()
+        self.app.cloud_health = MagicMock()
+        self.app.cloud_health.cost_history.return_value = CLItest.COST_HISTORY_RV
+        self.app.cloud_health.cost_current.return_value = CLItest.COST_CURRENT_RV
         self.mock_get_cloud_health = mock_get_cloud_health
         self.mock_get_logger = mock_get_logger
 
@@ -65,14 +78,16 @@ class CLItest(unittest.TestCase):
         self.assertEqual(self.API_KEY, self.app.args.api_key)
 
     @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
-    def test_run(self, mock_pprint):
+    def test_run(self, mock_pprint): #FIX
         """
         CLI Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
         """
         self.app.logger = MagicMock()
         self.app.run()
-        self.app.logger.info.assert_called_once_with(mock_pprint(self.mock_get_cloud_health.cost_history(CLItest.INTERVAL)))
-        self.app.logger.info.assert_called_once_with(mock_pprint(self.mock_get_cloud_health.cost_current(CLItest.AWS_ACCOUNT)))
+        self.app.cloud_health.cost_history.assert_called_once_with(CLItest.INTERVAL)
+        self.app.cloud_health.cost_current.assert_called_once_with(CLItest.AWS_ACCOUNT)
+        self.app.logger.info.assert_called_with(mock_pprint(CLItest.COST_HISTORY_RV))
+        self.app.logger.info.assert_called_with(mock_pprint(CLItest.COST_CURRENT_RV))
 
     def test_main(self):
         """
