@@ -17,71 +17,32 @@ import pprint
 # Third party libraries
 #
 
-
-#
-# Internal libraries
-#
-
+import krux.cli
 from krux.cli import get_group
-from krux_cloud_health.cloud_health import Interval, NAME
-import krux_cloud_health.cli_test
+from krux.logging import get_logger
+from krux_cloud_health.cloud_health import Interval, NAME, add_cloud_health_cli_arguments, get_cloud_health
 
 
-class Application(krux_cloud_health.cli_test.Application):
+class Application(krux.cli.Application):
 
     def __init__(self, name=NAME):
-
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)
 
-        self.interval = Interval[self.args.interval]
+        self.cloud_health = get_cloud_health(args=self.args, logger=self.logger, stats=self.stats)
 
     def add_cli_arguments(self, parser):
-        """
-        Add CloudHealth-related command-line arguments to the given parser.
-
-        :argument parser: parser instance to which the arguments will be added
-        """
         # Call to the superclass first
         super(Application, self).add_cli_arguments(parser)
 
-        group = get_group(parser, self.name)
-
-        group.add_argument(
-            '--interval',
-            type=str,
-            choices=[i.name for i in Interval],
-            default=Interval.daily.name,
-            help="Set time interval of data (default: %(default)s)",
-        )
-
-        group.add_argument(
-            '--set-date',
-            type=str,
-            default=None,
-            help="Retrieve cost history data for specific date, depending on interval. (ex: 'YYYY-MM-DD' for daily)",
-        )
+        add_cloud_health_cli_arguments(parser)
 
     def run(self):
-        try:
-            cost_history = self.cloud_health.cost_history(self.interval, self.args.set_date)
-            self.logger.debug(pprint.pformat(cost_history))
-        except (ValueError, IndexError) as e:
-            self.logger.error(e.message)
-            self.exit(1)
+        cost_history = self.cloud_health.cost_history(Interval.weekly)
+        self.logger.info(pprint.pformat(cost_history, indent=2, width=20))
 
-        # If no set_date, cost_data is most recent data available for given time interval in cost_history
-        if self.args.set_date is None:
-            cost_history.pop('Total')
-            last_key = sorted(cost_history.keys())[-1]
-            self.logger.info('Determined %s is the most recent time with data' % last_key)
-
-            cost_data = cost_history[last_key]
-        else:
-            cost_data = cost_history.values()[0]
-
-        for item, data in cost_data.iteritems():
-            self.stats.incr(item, data)
+        cost_current = self.cloud_health.cost_current("Krux IT")
+        self.logger.info(pprint.pformat(cost_current, indent=2, width=20))
 
 
 def main():

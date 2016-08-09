@@ -27,6 +27,8 @@ from enum import Enum
 #
 
 from krux.cli import get_parser, get_group
+from krux.logging import get_logger
+from krux.stats import get_stats
 
 
 NAME = "cloud-health-tech"
@@ -50,7 +52,7 @@ def add_cloud_health_cli_arguments(parser):
     )
 
 
-def get_cloud_health(args, logger, stats):
+def get_cloud_health(args=None, logger=None, stats=None):
     if not args:
         parser = get_parser(description=NAME)
         add_cloud_health_cli_arguments(parser)
@@ -105,7 +107,7 @@ class CloudHealth(object):
         report = "olap_reports/cost/current"
         api_call = self._get_api_call(report, self.api_key)
 
-        return self._get_data(api_call, 'AWS-Account', aws_account_input,)
+        return self._get_data(api_call, 'AWS-Account', aws_account_input)
 
     def _get_api_call(self, report, api_key, params={}):
         """
