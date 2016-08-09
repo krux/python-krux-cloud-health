@@ -41,7 +41,34 @@ class CloudHealthTest(unittest.TestCase):
     PARAMS_INTERVAL = {'interval': 'daily'} 
     PARAMS_TIME_INPUT = {'interval': 'daily', 'filters[]': 'time:select:{}'.format(TIME_INPUT)}
     API_CALL = {'api_call': 'return'}
-    API_CALL_ERROR = {'error': 'Error message'} 
+    API_CALL_ERROR = {'error': 'Error message'}
+    ITEMS_LIST = [{'label': 'service1', 'parent': -1},
+                    {'label': 'service2', 'parent': 1},
+                    {'label': 'service3', 'parent': 1}]
+    GET_DATA_API_CALL = {'dimensions': [
+                            {'time': 
+                                [
+                                    {'label': 'date1'},
+                                    {'label': 'date2'}
+                                ]
+                            },
+                            {'AWS-Service-Category':
+                                ITEMS_LIST}
+                        ],
+
+                        'data': [
+                            [
+                                [1],
+                                [2.24555],
+                                [None]
+                            ],
+                            [
+                                [3],
+                                [4.1111],
+                                [None]
+                            ]
+                        ]
+                    }
     
     def setUp(self):
         self.cloud_health = get_cloud_health(args=MagicMock(api_key=CloudHealthTest.API_KEY))
@@ -168,37 +195,22 @@ class CloudHealthTest(unittest.TestCase):
         Cloud Health Test: Get Data method correctly gets category and service information from API call. It then
         passes information for each category into Get Data Info.
         """
-        api_call = {'dimensions':
-            [
-                {'time': 
-                    [
-                        {'label': 'Total'},
-                    ]
-                },
-                {'AWS-Service-Category': 
-                    [
-                        {'label': 'service'} 
-                    ]
-                }
-            ]
-        }
-        self.cloud_health._get_data_info = MagicMock()
-        get_data = self.cloud_health._get_data(api_call, 'time')
-        self.cloud_health._get_data_info.assert_called_once_with(api_call, [{'label': 'service'}], 'Total', 0)
+        get_data = self.cloud_health._get_data(CloudHealthTest.GET_DATA_API_CALL, 'time')
+        self.assertEqual(get_data, {'date1': {'service2': 2.25, 'service3': None},
+            'date2': {'service2': 4.11, 'service3': None}})
+
+    def test_get_data_category_name(self):
+        get_data = self.cloud_health._get_data(CloudHealthTest.GET_DATA_API_CALL, 'time', 'date1')
+        self.assertEqual(get_data, {'date1': {'service2': 2.25, 'service3': None}})
 
     def test_get_data_info(self):
         """
         Cloud Health Test: Get Data Info method organizes information for inputted category and
         filters unnecessary services.
         """
-        api_call = {'data': [
-                [
-                    [100]
-                ]
-            ]
-        }
         get_data_info = self.cloud_health._get_data_info(
-            api_call,
-            [{'label': 'service', 'parent': 1}, {'label': 'Total', 'parent': 0}],
-            'Total', 0)
-        self.assertEqual(get_data_info, {'Total': {'service': 100}})
+            CloudHealthTest.GET_DATA_API_CALL,
+            CloudHealthTest.ITEMS_LIST,
+            'date1',
+            0)
+        self.assertEqual(get_data_info, {'date1': {'service2': 2.25, 'service3': None}})
