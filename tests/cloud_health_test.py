@@ -69,6 +69,9 @@ class CloudHealthTest(unittest.TestCase):
                             ]
                         ]
                     }
+    GET_DATA_INFO_RV = {'date1': {'service2': 2.25, 'service3': None}}
+    GET_DATA_RV = {'date1': {'service2': 2.25, 'service3': None},
+            'date2': {'service2': 4.11, 'service3': None}}
     
     def setUp(self):
         self.cloud_health = get_cloud_health(args=MagicMock(api_key=CloudHealthTest.API_KEY))
@@ -195,13 +198,14 @@ class CloudHealthTest(unittest.TestCase):
         Cloud Health Test: Get Data method correctly gets category and service information from API call. It then
         passes information for each category into Get Data Info.
         """
-        get_data = self.cloud_health._get_data(CloudHealthTest.GET_DATA_API_CALL, 'time')
-        self.assertEqual(get_data, {'date1': {'service2': 2.25, 'service3': None},
-            'date2': {'service2': 4.11, 'service3': None}})
+        get_data = self.cloud_health._get_data(CloudHealthTest.GET_DATA_API_CALL,
+            CloudHealthTest.COST_HISTORY_CATEGORY_TYPE)
+        self.assertEqual(get_data, CloudHealthTest.GET_DATA_RV)
 
     def test_get_data_category_name(self):
-        get_data = self.cloud_health._get_data(CloudHealthTest.GET_DATA_API_CALL, 'time', 'date1')
-        self.assertEqual(get_data, {'date1': {'service2': 2.25, 'service3': None}})
+        get_data = self.cloud_health._get_data(CloudHealthTest.GET_DATA_API_CALL,
+            CloudHealthTest.COST_HISTORY_CATEGORY_TYPE, 'date1')
+        self.assertEqual(get_data, CloudHealthTest.GET_DATA_INFO_RV)
 
     def test_get_data_info(self):
         """
@@ -213,4 +217,4 @@ class CloudHealthTest(unittest.TestCase):
             CloudHealthTest.ITEMS_LIST,
             'date1',
             0)
-        self.assertEqual(get_data_info, {'date1': {'service2': 2.25, 'service3': None}})
+        self.assertEqual(get_data_info,  CloudHealthTest.GET_DATA_INFO_RV)
