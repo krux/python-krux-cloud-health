@@ -1,13 +1,17 @@
 --extra-index-url https://staticfiles.krxd.net/foss/pypi/
 
 # Krux's standard library, which this is built on
-krux-stdlib==2.2.1
+krux-stdlib==2.3.0
 
 # Requests information from API webpages
 requests==2.10.0
 
 # For enum parameters in CLI
 enum34==1.1.6
+
+# This makes sure SNI support is there and SNIMissingWarning is not thrown
+# Refer to http://urllib3.readthedocs.io/en/latest/user-guide.html#ssl-py2
+urllib3[secure]==1.16
 
 # Transitive Dependencies
 
@@ -29,3 +33,15 @@ async==0.6.1
 fudge==1.0.3
 gitdb==0.5.4
 smmap==0.8.2
+
+# From urllib3[secure]
+certifi==2016.8.8
+cffi==1.7.0
+cryptography==1.4
+idna==2.1
+ipaddress==1.0.16
+ndg-httpsclient==0.4.2
+pyOpenSSL==16.0.0
+pyasn1==0.1.9
+pycparser==2.14
+urllib3==1.16
