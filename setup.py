@@ -35,8 +35,8 @@ setup(
     install_requires=[],
     entry_points={
         'console_scripts': [
-            'krux-cloud-health-script=krux_cloud_health.cli:main',
-            'krux-cloud-health-test=krux_cloud_health.cli_test:main',
+            'krux-cloud-health=krux_cloud_health.cloud_health_api:main',
+            'krux-cloud-health-test=krux_cloud_health.cli:main',
         ],
     },
 )
