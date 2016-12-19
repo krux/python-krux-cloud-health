@@ -9,7 +9,6 @@
 
 from __future__ import absolute_import
 import unittest
-import sys
 
 #
 # Third party libraries
@@ -21,9 +20,7 @@ from mock import MagicMock, patch
 # Internal libraries
 #
 
-from krux.cli import get_parser, get_group
-from krux.stats import DummyStatsClient
-from krux_cloud_health.cloud_health import CloudHealth, get_cloud_health, Interval, NAME
+from krux_cloud_health.cloud_health import get_cloud_health, Interval, NAME
 
 
 class CloudHealthTest(unittest.TestCase):
@@ -85,7 +82,9 @@ class CloudHealthTest(unittest.TestCase):
         Cloud Health Test: All arguments created and passed into CloudHealth if none are provided.
         """
         mock_parser.return_value.parse_args.return_value = MagicMock(api_key=CloudHealthTest.API_KEY)
-        cloud_health = get_cloud_health()
+
+        get_cloud_health()
+
         mock_cloud_health.assert_called_once_with(
             api_key = CloudHealthTest.API_KEY,
             logger=mock_logger(name=NAME),
@@ -100,7 +99,9 @@ class CloudHealthTest(unittest.TestCase):
         Cloud Health Test: All arguments into passed CloudHealth if provided.
         """
         mock_args = MagicMock(api_key=CloudHealthTest.API_KEY)
-        cloud_health = get_cloud_health(mock_args, mock_logger, mock_stats)
+
+        get_cloud_health(mock_args, mock_logger, mock_stats)
+
         mock_cloud_health.assert_called_once_with(
             api_key = CloudHealthTest.API_KEY,
             logger=mock_logger,
@@ -114,7 +115,9 @@ class CloudHealthTest(unittest.TestCase):
         """
         self.cloud_health._get_api_call = MagicMock()
         self.cloud_health._get_data = MagicMock()
-        cost_history = self.cloud_health.cost_history(CloudHealthTest.TIME_INTERVAL, CloudHealthTest.TIME_INPUT)
+
+        self.cloud_health.cost_history(CloudHealthTest.TIME_INTERVAL, CloudHealthTest.TIME_INPUT)
+
         self.cloud_health._get_api_call.assert_called_once_with(
             CloudHealthTest.COST_HISTORY_REPORT,
             CloudHealthTest.API_KEY,
@@ -136,7 +139,9 @@ class CloudHealthTest(unittest.TestCase):
         """
         self.cloud_health._get_api_call = MagicMock(return_value=CloudHealthTest.API_CALL)
         self.cloud_health._get_data = MagicMock()
-        cost_history = self.cloud_health.cost_history(CloudHealthTest.TIME_INTERVAL)
+
+        self.cloud_health.cost_history(CloudHealthTest.TIME_INTERVAL)
+
         self.cloud_health._get_api_call.assert_called_once_with(
             CloudHealthTest.COST_HISTORY_REPORT,
             CloudHealthTest.API_KEY,
@@ -153,7 +158,9 @@ class CloudHealthTest(unittest.TestCase):
         """
         self.cloud_health._get_api_call = MagicMock(return_value=CloudHealthTest.API_CALL)
         self.cloud_health._get_data = MagicMock()
-        cost_current = self.cloud_health.cost_current()
+
+        self.cloud_health.cost_current()
+
         self.cloud_health._get_api_call.assert_called_once_with(
             CloudHealthTest.COST_CURRENT_REPORT,
             CloudHealthTest.API_KEY
@@ -171,7 +178,9 @@ class CloudHealthTest(unittest.TestCase):
         """
         self.cloud_health.logger = MagicMock()
         mock_request.get.return_value.json.return_value = CloudHealthTest.API_CALL
+
         get_api_call = self.cloud_health._get_api_call(CloudHealthTest.COST_HISTORY_REPORT, CloudHealthTest.API_KEY)
+
         mock_request.get.assert_called_once_with(
             CloudHealthTest.COST_HISTORY_URI,
             params=CloudHealthTest.URI_ARGS_NO_PARAMS
@@ -187,8 +196,9 @@ class CloudHealthTest(unittest.TestCase):
         """
         mock_request.get.return_value.json.return_value = CloudHealthTest.API_CALL_ERROR
         self.cloud_health.logger = MagicMock()
+
         with self.assertRaises(ValueError) as ve:
-            get_api_call = self.cloud_health._get_api_call(
+            self.cloud_health._get_api_call(
                 CloudHealthTest.COST_HISTORY_REPORT,
                 CloudHealthTest.API_KEY)
         self.assertEqual(ve.exception.message, CloudHealthTest.API_CALL_ERROR.get('error'))

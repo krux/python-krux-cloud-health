@@ -18,8 +18,6 @@ import pprint
 #
 
 import krux.cli
-from krux.cli import get_group
-from krux.logging import get_logger
 from krux_cloud_health.cloud_health import Interval, NAME, add_cloud_health_cli_arguments, get_cloud_health
 
 
@@ -49,6 +47,7 @@ def main():
     app = Application()
     with app.context():
         app.run()
+
 
 # Run the application stand alone
 if __name__ == '__main__':

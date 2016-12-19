@@ -22,8 +22,7 @@ from mock import MagicMock, patch
 #
 
 from krux_cloud_health.cloud_health_api import Application, main
-from krux_cloud_health.cloud_health import Interval, NAME
-from krux.stats import DummyStatsClient
+from krux_cloud_health.cloud_health import Interval
 
 
 class CloudHealthAPITest(unittest.TestCase):

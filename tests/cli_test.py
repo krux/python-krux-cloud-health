@@ -22,7 +22,7 @@ from mock import MagicMock, patch
 #
 
 from krux_cloud_health.cli import Application, main
-from krux_cloud_health.cloud_health import Interval, NAME
+from krux_cloud_health.cloud_health import Interval
 from krux.stats import DummyStatsClient
 
 
@@ -44,16 +44,14 @@ class CLItest(unittest.TestCase):
             'Krux Ops': {'key': 'value'}
         }
 
-    @patch('krux_cloud_health.cli.get_logger')
     @patch('krux_cloud_health.cli.get_cloud_health')
     @patch('sys.argv', ['api-key', API_KEY])
-    def setUp(self, mock_get_cloud_health, mock_get_logger):
+    def setUp(self, mock_get_cloud_health):
         self.app = Application()
         self.app.cloud_health = MagicMock()
         self.app.cloud_health.cost_history.return_value = CLItest.COST_HISTORY_RV
         self.app.cloud_health.cost_current.return_value = CLItest.COST_CURRENT_RV
         self.mock_get_cloud_health = mock_get_cloud_health
-        self.mock_get_logger = mock_get_logger
 
     def test_init(self):
         """

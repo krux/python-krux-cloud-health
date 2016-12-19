@@ -11,7 +11,6 @@ Class to retrieve data from Cloud Health Tech API
 #
 
 from __future__ import absolute_import
-import sys
 import urlparse
 import pprint
 
