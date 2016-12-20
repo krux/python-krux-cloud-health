@@ -101,7 +101,8 @@ class CloudHealth(object):
         """
         Current month's costs for AWS accounts.
 
-        :argument time_input: AWS account for which data is retrieved (optional) - if not specified, will return information for all AWS accounts
+        :argument time_input: AWS account for which data is retrieved (optional)
+                              - if not specified, will return information for all AWS accounts
         """
         report = "olap_reports/cost/current"
         api_call = self._get_api_call(report, self.api_key)
@@ -145,7 +146,8 @@ class CloudHealth(object):
 
         :argument api_call: API call with information
         :argument category_type: Key of the first dimension (i.e. 'time' or 'AWS-Account')
-        :argument category_name: Specifies category_name to retrieve from category_list (optional) - if not specified, retrieves info from all categories
+        :argument category_name: Specifies category_name to retrieve from category_list (optional)
+                                 - if not specified, retrieves info from all categories
         """
         # GOTCHA: Default with two empty dictionaries so lists can be retrieved
         dimensions = api_call.get('dimensions', [{}, {}])
@@ -178,7 +180,7 @@ class CloudHealth(object):
         data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
         for i in range(len(items_list)):
             item = items_list[i]
-            if ((not exclude_summary or item.get("parent") >= 0)
-                and item["label"].lower() != "total"):
+            if ((not exclude_summary or item.get("parent") >= 0) and
+               item["label"].lower() != "total"):
                 info[category_input][str(item["label"])] = data_list[i]
         return info
