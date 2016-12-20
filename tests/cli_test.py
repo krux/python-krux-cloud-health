@@ -32,7 +32,7 @@ class CLItest(unittest.TestCase):
     API_KEY = '12345'
     INTERVAL = Interval.weekly
     AWS_ACCOUNT = 'Krux IT'
-    COST_HISTORY_RV =  {
+    COST_HISTORY_RV = {
             'Total': {'key': 'value'},
             '2016-05-01': {'key': 'value'},
             '2016-06-01': {'key': 'value'},
@@ -76,7 +76,7 @@ class CLItest(unittest.TestCase):
         self.assertEqual(self.API_KEY, self.app.args.api_key)
 
     @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
-    def test_run(self, mock_pprint): #FIX
+    def test_run(self, mock_pprint):  # FIX
         """
         CLI Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
         """
@@ -97,4 +97,3 @@ class CLItest(unittest.TestCase):
 
         app_class.assert_called_once_with()
         app.run.assert_called_once_with()
-
