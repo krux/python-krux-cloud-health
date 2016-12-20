@@ -1,0 +1,158 @@
+# -*- coding: utf-8 -*-
+#
+# © 2016 Krux Digital, Inc.
+#
+
+#
+# Standard libraries
+#
+
+from __future__ import absolute_import
+import unittest
+import pprint
+from datetime import datetime
+import calendar
+from StringIO import StringIO
+
+#
+# Third party libraries
+#
+
+from mock import MagicMock, patch
+from six import iteritems
+
+#
+# Internal libraries
+#
+
+from bin.cloud_health_to_graphite import Application, main
+
+
+class CloudHealthAPITest(unittest.TestCase):
+
+    NAME = 'cloud-health-tech'
+    API_KEY = '12345'
+    REPORT_ID = 67890L
+    REPORT_ID_ARG = str(REPORT_ID)
+    REPORT_NAME = 'fake_report'
+    SET_DATE = '2016-05-01'
+
+    _STDOUT_FORMAT = 'cloud_health.{env}.{report_name}.{category} {cost} {date}\n'
+
+    @staticmethod
+    def _get_cloud_health_return(report_id, category=None):
+        result = {
+            'Total': {'key1': 'value1', 'key2': None},
+            '2016-05-01': {'key1': 'value1', 'key2': None},
+            '2016-06-01': {'key1': 'value1', 'key2': None},
+            '2016-07-01': {'key1': 'value1', 'key2': None},
+        }
+
+        if category is None:
+            return result
+        else:
+            return {
+                category: result.get(category, {})
+            }
+
+    @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME])
+    def setUp(self):
+        self.app = Application()
+        self.app.logger = MagicMock()
+        self.app.cloud_health.get_custom_report = MagicMock(side_effect=CloudHealthAPITest._get_cloud_health_return)
+
+    def test_add_cli_arguments(self):
+        """
+        Cloud Health API Test: All arguments from present in the args
+        """
+        self.assertIn('api_key', self.app.args)
+        self.assertIn('report_id', self.app.args)
+        self.assertIn('report_name', self.app.args)
+        self.assertIn('set_date', self.app.args)
+
+        self.assertEqual(self.API_KEY, self.app.args.api_key)
+        self.assertEqual(self.REPORT_ID, self.app.args.report_id)
+        self.assertEqual(self.REPORT_NAME, self.app.args.report_name)
+        self.assertIsNone(self.app.args.set_date)
+
+    def test_run_error(self):
+        error = ValueError('Error message')
+
+        self.app.cloud_health.get_custom_report = MagicMock(side_effect=error)
+        with self.assertRaises(SystemExit) as cm:
+            self.app.run()
+        self.assertEqual(cm.exception.code, 1)
+        self.app.logger.error.assert_called_once_with(str(error))
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_run_without_set_date(self, mock_stdout):
+        """
+        Cloud Health API Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
+        """
+        self.app.run()
+
+        self.app.cloud_health.get_custom_report.assert_called_once_with(
+            report_id=self.REPORT_ID,
+            category=None,
+        )
+        self.app.logger.debug.assert_called_once_with(
+            pprint.pformat(CloudHealthAPITest._get_cloud_health_return(self.REPORT_ID))
+        )
+
+        prints = ''
+
+        for date, values in iteritems(CloudHealthAPITest._get_cloud_health_return(self.REPORT_ID)):
+            if date is 'Total':
+                continue
+
+            date = int(calendar.timegm(datetime.strptime(date, '%Y-%m-%d').utctimetuple()))
+
+            for category, cost in iteritems(values):
+                if cost is not None:
+                    prints += self._STDOUT_FORMAT.format(
+                        env=self.app.args.stats_environment,
+                        report_name=self.REPORT_NAME,
+                        category=category,
+                        cost=cost,
+                        date=date,
+                    )
+
+        self.assertEqual(prints, mock_stdout.getvalue())
+
+    @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME, '--set-date', SET_DATE])
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_run_with_set_date(self, mock_stdout):
+        app = Application()
+        app.cloud_health.get_custom_report = MagicMock(side_effect=CloudHealthAPITest._get_cloud_health_return)
+
+        app.run()
+
+        prints = ''
+
+        for date, values in iteritems(CloudHealthAPITest._get_cloud_health_return(self.REPORT_ID, self.SET_DATE)):
+            date = int(calendar.timegm(datetime.strptime(self.SET_DATE, '%Y-%m-%d').utctimetuple()))
+
+            for category, cost in iteritems(values):
+                if cost is not None:
+                    prints += self._STDOUT_FORMAT.format(
+                        env=self.app.args.stats_environment,
+                        report_name=self.REPORT_NAME,
+                        category=category,
+                        cost=cost,
+                        date=date,
+                    )
+
+        self.assertEqual(prints, mock_stdout.getvalue())
+
+    def test_main(self):
+        """
+        Cloud Health API Test: Application is instantiated and run() is called in main()
+        """
+        app = MagicMock()
+        app_class = MagicMock(return_value=app)
+
+        with patch('bin.cloud_health_to_graphite.Application', app_class):
+            main()
+
+        app_class.assert_called_once_with()
+        app.run.assert_called_once_with()
