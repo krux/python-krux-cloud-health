@@ -32,11 +32,7 @@ setup(
     license='All Rights Reserved.',
     packages=find_packages(),
     # dependencies are named in requirements.pip
-    install_requires=[
-        'krux-stdlib',
-        'requests',
-        'enum34',
-    ],
+    install_requires=[],
     entry_points={
         'console_scripts': [
             'cloud-health-to-graphite=krux_cloud_health.cloud_health_api:main',
