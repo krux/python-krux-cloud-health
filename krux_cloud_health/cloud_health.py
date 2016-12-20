@@ -109,13 +109,13 @@ class CloudHealth(object):
 
         return self._get_data(api_call, 'AWS-Account', aws_account_input)
 
-    def non_static_workload(self):
-        report = 'olap_reports/custom/1443109011519'
+    def get_custom_report(self, report_id, category=None):
+        report = 'olap_reports/custom/{report_id}'.format(report_id=report_id)
         api_call = self._get_api_call(report, self.api_key)
 
         self.logger.debug(api_call)
 
-        return self._get_data(api_call, exclude_summary=False)
+        return self._get_data(api_call, category_name=category, exclude_summary=False)
 
     def _get_api_call(self, report, api_key, params={}):
         """
