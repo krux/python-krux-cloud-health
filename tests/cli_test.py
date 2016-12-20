@@ -83,9 +83,7 @@ class CLItest(unittest.TestCase):
         self.app.logger = MagicMock()
         self.app.run()
         self.app.cloud_health.cost_history.assert_called_once_with(CLItest.INTERVAL)
-        self.app.cloud_health.cost_current.assert_called_once_with(CLItest.AWS_ACCOUNT)
-        self.app.logger.info.assert_called_with(mock_pprint(CLItest.COST_HISTORY_RV))
-        self.app.logger.info.assert_called_with(mock_pprint(CLItest.COST_CURRENT_RV))
+        self.app.logger.info.assert_called_once_with(mock_pprint(CLItest.COST_HISTORY_RV))
 
     def test_main(self):
         """
