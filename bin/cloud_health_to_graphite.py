@@ -76,7 +76,9 @@ class Application(krux_cloud_health.cli.Application):
             self.logger.error(e.message)
             self.exit(1)
 
-        del report_data['Total']
+        if 'Total' in report_data:
+            del report_data['Total']
+
         for date, values in iteritems(report_data):
             date = int(calendar.timegm(datetime.strptime(date, '%Y-%m-%d').utctimetuple()))
 
