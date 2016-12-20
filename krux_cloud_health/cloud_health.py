@@ -108,6 +108,14 @@ class CloudHealth(object):
 
         return self._get_data(api_call, 'AWS-Account', aws_account_input)
 
+    def non_static_workload(self):
+        report = 'olap_reports/custom/1443109011519'
+        api_call = self._get_api_call(report, self.api_key)
+
+        self.logger.debug(api_call)
+
+        return self._get_data(api_call, exclude_summary=False)
+
     def _get_api_call(self, report, api_key, params={}):
         """
         Returns API call for specified report and time interval using API Key.
@@ -131,7 +139,7 @@ class CloudHealth(object):
 
         return api_call
 
-    def _get_data(self, api_call, category_type, category_name=None):
+    def _get_data(self, api_call, category_type='time', category_name=None, exclude_summary=True):
         """
         Retrieves data from API call for
 
@@ -148,17 +156,18 @@ class CloudHealth(object):
             if category_name is None or category_name == category.get('label')
         ]
 
-        services = dimensions[self._SERVICE_DIMENSION_INDEX].get('AWS-Service-Category', {})
+        services_list = dimensions[self._SERVICE_DIMENSION_INDEX].values()
+        services = services_list[0] if len(services_list) > 0 else []
 
         total_data = {}
         for index in range(len(categories)):
             category = categories[index]
-            category_info = self._get_data_info(api_call, services, category, index)
+            category_info = self._get_data_info(api_call, services, category, index, exclude_summary)
             total_data.update(category_info)
 
         return total_data
 
-    def _get_data_info(self, api_call, items_list, category_input, index):
+    def _get_data_info(self, api_call, items_list, category_input, index, exclude_summary=True):
         """
         Retrieves information for specific entry in category_list.
         """
@@ -169,6 +178,7 @@ class CloudHealth(object):
         data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
         for i in range(len(items_list)):
             item = items_list[i]
-            if item.get("parent") >= 0 and item["label"] != "Total":
+            if ((not exclude_summary or item.get("parent") >= 0)
+                and item["label"].lower() != "total"):
                 info[category_input][str(item["label"])] = data_list[i]
         return info
