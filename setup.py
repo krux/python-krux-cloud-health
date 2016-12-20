@@ -39,7 +39,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'cloud-health-to-graphite=krux_cloud_health.cloud_health_api:main',
+            'cloud-health-to-graphite=bin.cloud_health_to_graphite:main',
             'krux-cloud-health-test=krux_cloud_health.cli:main',
         ],
     },
