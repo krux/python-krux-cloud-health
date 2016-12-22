@@ -14,7 +14,7 @@ from __future__ import absolute_import
 import pprint
 
 #
-# Third party libraries
+# Internal libraries
 #
 
 import krux.cli
