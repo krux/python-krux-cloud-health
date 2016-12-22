@@ -86,7 +86,8 @@ class Application(krux_cloud_health.cli.Application):
             date = int(calendar.timegm(datetime.strptime(date, '%Y-%m-%d').utctimetuple()))
 
             for category, cost in iteritems(values):
-                category = category.replace('.', '_')
+                # XXX: Empty space and period causes issues with graphite. Replace it with underscore.
+                category = category.replace(' ', '_').replace('.', '_')
                 if cost is not None:
                     print('cloud_health.{env}.{report_name}.{category} {cost} {date}'.format(
                         env=self.args.stats_environment,
