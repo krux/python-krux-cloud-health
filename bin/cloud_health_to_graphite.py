@@ -37,6 +37,9 @@ class Application(krux_cloud_health.cli.Application):
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)
 
+        # XXX: Empty space and period causes issues with graphite. Replace it with underscore.
+        self.report_name = self.args.report_name.replace(' ', '_').replace('.', '_')
+
     def add_cli_arguments(self, parser):
         """
         Add CloudHealth-related command-line arguments to the given parser.
@@ -83,10 +86,11 @@ class Application(krux_cloud_health.cli.Application):
             date = int(calendar.timegm(datetime.strptime(date, '%Y-%m-%d').utctimetuple()))
 
             for category, cost in iteritems(values):
+                category = category.replace('.', '_')
                 if cost is not None:
                     print('cloud_health.{env}.{report_name}.{category} {cost} {date}'.format(
                         env=self.args.stats_environment,
-                        report_name=self.args.report_name,
+                        report_name=self.report_name,
                         category=category,
                         cost=cost,
                         date=date,
