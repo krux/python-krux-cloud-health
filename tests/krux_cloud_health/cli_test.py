@@ -21,8 +21,9 @@ from mock import MagicMock, patch
 # Internal libraries
 #
 
+from krux_cloud_health import VERSION
 from krux_cloud_health.cli import Application, main
-from krux_cloud_health.cloud_health import Interval
+from krux_cloud_health.cloud_health import Interval, NAME
 from krux.stats import DummyStatsClient
 
 
@@ -61,6 +62,10 @@ class CLItest(unittest.TestCase):
         self.assertEqual(self.NAME, self.app.parser.description)
         # The dummy stats client has no awareness of the name. Just check the class.
         self.assertIsInstance(self.app.stats, DummyStatsClient)
+
+        # Verify the version info is specified
+        self.assertIn(NAME, self.app._VERSIONS)
+        self.assertEqual(VERSION, self.app._VERSIONS[NAME])
 
         self.mock_get_cloud_health.assert_called_once_with(
             args=self.app.args,
