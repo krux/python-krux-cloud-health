@@ -11,7 +11,6 @@ Class to retrieve data from Cloud Health Tech API
 #
 
 from __future__ import absolute_import
-import sys
 import urlparse
 import pprint
 
@@ -102,12 +101,21 @@ class CloudHealth(object):
         """
         Current month's costs for AWS accounts.
 
-        :argument time_input: AWS account for which data is retrieved (optional) - if not specified, will return information for all AWS accounts
+        :argument time_input: AWS account for which data is retrieved (optional)
+                              - if not specified, will return information for all AWS accounts
         """
         report = "olap_reports/cost/current"
         api_call = self._get_api_call(report, self.api_key)
 
         return self._get_data(api_call, 'AWS-Account', aws_account_input)
+
+    def get_custom_report(self, report_id, category=None):
+        report = 'olap_reports/custom/{report_id}'.format(report_id=report_id)
+        api_call = self._get_api_call(report, self.api_key)
+
+        self.logger.debug(api_call)
+
+        return self._get_data(api_call, category_name=category, exclude_summary=False)
 
     def _get_api_call(self, report, api_key, params={}):
         """
@@ -132,13 +140,14 @@ class CloudHealth(object):
 
         return api_call
 
-    def _get_data(self, api_call, category_type, category_name=None):
+    def _get_data(self, api_call, category_type='time', category_name=None, exclude_summary=True):
         """
         Retrieves data from API call for
 
         :argument api_call: API call with information
         :argument category_type: Key of the first dimension (i.e. 'time' or 'AWS-Account')
-        :argument category_name: Specifies category_name to retrieve from category_list (optional) - if not specified, retrieves info from all categories
+        :argument category_name: Specifies category_name to retrieve from category_list (optional)
+                                 - if not specified, retrieves info from all categories
         """
         # GOTCHA: Default with two empty dictionaries so lists can be retrieved
         dimensions = api_call.get('dimensions', [{}, {}])
@@ -149,17 +158,18 @@ class CloudHealth(object):
             if category_name is None or category_name == category.get('label')
         ]
 
-        services = dimensions[self._SERVICE_DIMENSION_INDEX].get('AWS-Service-Category', {})
+        services_list = dimensions[self._SERVICE_DIMENSION_INDEX].values()
+        services = services_list[0] if len(services_list) > 0 else []
 
         total_data = {}
         for index in range(len(categories)):
             category = categories[index]
-            category_info = self._get_data_info(api_call, services, category, index)
+            category_info = self._get_data_info(api_call, services, category, index, exclude_summary)
             total_data.update(category_info)
 
         return total_data
 
-    def _get_data_info(self, api_call, items_list, category_input, index):
+    def _get_data_info(self, api_call, items_list, category_input, index, exclude_summary=True):
         """
         Retrieves information for specific entry in category_list.
         """
@@ -170,6 +180,7 @@ class CloudHealth(object):
         data_list = [float("%.2f" % data) if isinstance(data, float) else data for data in data_list]
         for i in range(len(items_list)):
             item = items_list[i]
-            if item.get("parent") >= 0 and item["label"] != "Total":
+            if ((not exclude_summary or item.get("parent") >= 0) and
+               item["label"].lower() != "total"):
                 info[category_input][str(item["label"])] = data_list[i]
         return info

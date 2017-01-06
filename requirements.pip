@@ -1,13 +1,16 @@
 --extra-index-url https://staticfiles.krxd.net/foss/pypi/
 
 # Krux's standard library, which this is built on
-krux-stdlib==2.4.1.
+krux-stdlib==2.4.1
 
 # Requests information from API webpages
 requests==2.12.4
 
 # For enum parameters in CLI
 enum34==1.1.6
+
+# For Python 3 compabitility
+six==1.10.0
 
 # Transitive libraries
 # This is needed so there are no version conflicts when
