@@ -75,8 +75,8 @@ class CLItest(unittest.TestCase):
         self.assertIn('api_key', self.app.args)
         self.assertEqual(self.API_KEY, self.app.args.api_key)
 
-    @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
-    def test_run(self, mock_pprint):  # FIX
+    @patch('krux_cloud_health.cli.pprint.pformat')
+    def test_run(self, mock_pprint):
         """
         CLI Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
         """
