@@ -10,14 +10,14 @@ Package setup for python-krux-release-monitoring
 ######################
 from __future__ import absolute_import
 from setuptools import setup, find_packages
+from krux_cloud_health import VERSION
 
-# We use the version to construct the DOWNLOAD_URL.
-VERSION = '0.2.0'
 
 # URL to the repository on Github.
 REPO_URL = 'https://github.com/krux/python-krux-cloud-health'
 # Github will generate a tarball as long as you tag your releases, so don't
 # forget to tag!
+# We use the version to construct the DOWNLOAD_URL.
 DOWNLOAD_URL = ''.join((REPO_URL, '/tarball/release/', VERSION))
 
 
