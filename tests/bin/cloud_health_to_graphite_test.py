@@ -13,6 +13,7 @@ import pprint
 from datetime import datetime
 import calendar
 from StringIO import StringIO
+import re
 
 #
 # Third party libraries
@@ -25,6 +26,7 @@ from six import iteritems
 # Internal libraries
 #
 
+from krux_cloud_health import VERSION
 from bin.cloud_health_to_graphite import Application, main
 
 
@@ -34,7 +36,8 @@ class CloudHealthAPITest(unittest.TestCase):
     API_KEY = '12345'
     REPORT_ID = 67890L
     REPORT_ID_ARG = str(REPORT_ID)
-    REPORT_NAME = 'fake_report'
+    REPORT_NAME_ARG = 'fake report'
+    REPORT_NAME = re.sub('[ \.]+', '_', REPORT_NAME_ARG)
     SET_DATE = '2016-05-01'
 
     _STDOUT_FORMAT = 'cloud_health.{env}.{report_name}.{category} {cost} {date}\n'
@@ -55,11 +58,22 @@ class CloudHealthAPITest(unittest.TestCase):
                 category: result.get(category, {})
             }
 
-    @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME])
+    @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME_ARG])
     def setUp(self):
         self.app = Application()
         self.app.logger = MagicMock()
         self.app.cloud_health.get_custom_report = MagicMock(side_effect=CloudHealthAPITest._get_cloud_health_return)
+
+    def test_init(self):
+        """
+        Cloud Health API Test: All private fields are properly created in __init__
+        """
+        # Verify report_name field is created
+        self.assertEqual(self.REPORT_NAME, self.app.report_name)
+
+        # Verify the version info is specified
+        self.assertIn(Application.NAME, self.app._VERSIONS)
+        self.assertEqual(VERSION, self.app._VERSIONS[Application.NAME])
 
     def test_add_cli_arguments(self):
         """
@@ -72,7 +86,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
         self.assertEqual(self.API_KEY, self.app.args.api_key)
         self.assertEqual(self.REPORT_ID, self.app.args.report_id)
-        self.assertEqual(self.REPORT_NAME, self.app.args.report_name)
+        self.assertEqual(self.REPORT_NAME_ARG, self.app.args.report_name)
         self.assertIsNone(self.app.args.set_date)
 
     def test_run_error(self):
@@ -119,7 +133,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
         self.assertEqual(prints, mock_stdout.getvalue())
 
-    @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME, '--set-date', SET_DATE])
+    @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME_ARG, '--set-date', SET_DATE])
     @patch('sys.stdout', new_callable=StringIO)
     def test_run_with_set_date(self, mock_stdout):
         app = Application()

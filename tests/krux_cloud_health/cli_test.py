@@ -21,8 +21,9 @@ from mock import MagicMock, patch
 # Internal libraries
 #
 
+from krux_cloud_health import VERSION
 from krux_cloud_health.cli import Application, main
-from krux_cloud_health.cloud_health import Interval
+from krux_cloud_health.cloud_health import Interval, NAME
 from krux.stats import DummyStatsClient
 
 
@@ -62,6 +63,10 @@ class CLItest(unittest.TestCase):
         # The dummy stats client has no awareness of the name. Just check the class.
         self.assertIsInstance(self.app.stats, DummyStatsClient)
 
+        # Verify the version info is specified
+        self.assertIn(NAME, self.app._VERSIONS)
+        self.assertEqual(VERSION, self.app._VERSIONS[NAME])
+
         self.mock_get_cloud_health.assert_called_once_with(
             args=self.app.args,
             logger=self.app.logger,
@@ -75,8 +80,8 @@ class CLItest(unittest.TestCase):
         self.assertIn('api_key', self.app.args)
         self.assertEqual(self.API_KEY, self.app.args.api_key)
 
-    @patch('krux_cloud_health.cloud_health_api.pprint.pformat')
-    def test_run(self, mock_pprint):  # FIX
+    @patch('krux_cloud_health.cli.pprint.pformat')
+    def test_run(self, mock_pprint):
         """
         CLI Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
         """
