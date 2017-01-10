@@ -35,7 +35,7 @@ class CloudHealthTest(unittest.TestCase):
     TIME_INPUT = 'time_input'
     COST_HISTORY_CATEGORY_TYPE = 'time'
     COST_CURRENT_CATEGORY_TYPE = 'AWS-Account'
-    PARAMS_INTERVAL = {'interval': 'daily'} 
+    PARAMS_INTERVAL = {'interval': 'daily'}
     PARAMS_TIME_INPUT = {'interval': 'daily', 'filters[]': 'time:select:{}'.format(TIME_INPUT)}
     API_CALL = {'api_call': 'return'}
     API_CALL_ERROR = {'error': 'Error message'}
@@ -43,7 +43,7 @@ class CloudHealthTest(unittest.TestCase):
                     {'label': 'service2', 'parent': 1},
                     {'label': 'service3', 'parent': 1}]
     GET_DATA_API_CALL = {'dimensions': [
-                            {'time': 
+                            {'time':
                                 [
                                     {'label': 'date1'},
                                     {'label': 'date2'}
@@ -69,7 +69,7 @@ class CloudHealthTest(unittest.TestCase):
     GET_DATA_INFO_RV = {'date1': {'service2': 2.25, 'service3': None}}
     GET_DATA_RV = {'date1': {'service2': 2.25, 'service3': None},
             'date2': {'service2': 4.11, 'service3': None}}
-    
+
     def setUp(self):
         self.cloud_health = get_cloud_health(args=MagicMock(api_key=CloudHealthTest.API_KEY))
 
@@ -213,6 +213,9 @@ class CloudHealthTest(unittest.TestCase):
         self.assertEqual(get_data, CloudHealthTest.GET_DATA_RV)
 
     def test_get_data_category_name(self):
+        """
+        Cloud Health Test: Get Data method correctly filters out everything else, when category name is used.
+        """
         get_data = self.cloud_health._get_data(CloudHealthTest.GET_DATA_API_CALL,
             CloudHealthTest.COST_HISTORY_CATEGORY_TYPE, 'date1')
         self.assertEqual(get_data, CloudHealthTest.GET_DATA_INFO_RV)

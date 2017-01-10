@@ -75,7 +75,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
     def test_init(self):
         """
-        Cloud Health API Test: All private fields are properly created in __init__
+        Cloud Health to Graphite: All private fields are properly created in __init__
         """
         # Verify report_name field is created
         self.assertEqual(self.REPORT_NAME, self.app.report_name)
@@ -86,7 +86,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
     def test_add_cli_arguments(self):
         """
-        Cloud Health API Test: All arguments from present in the args
+        Cloud Health to Graphite: All arguments from present in the args
         """
         self.assertIn('api_key', self.app.args)
         self.assertIn('report_id', self.app.args)
@@ -101,6 +101,10 @@ class CloudHealthAPITest(unittest.TestCase):
         self.assertEqual(self._DEFAULT_DATE_FORMAT, self.app.args.date_format)
 
     def test_run_error(self):
+        """
+        Cloud Health to Graphite: The application correctly errors out when report data cannot be retrieved
+        from Cloud Health
+        """
         error = ValueError('Error message')
 
         self.app.cloud_health.get_custom_report = MagicMock(side_effect=error)
@@ -112,7 +116,7 @@ class CloudHealthAPITest(unittest.TestCase):
     @patch('sys.stdout', new_callable=StringIO)
     def test_run_without_set_date(self, mock_stdout):
         """
-        Cloud Health API Test: Cloud Health's cost_history and cost_current methods are correctly called in self.app.run()
+        Cloud Health to Graphite: Cloud Health's report data is correctly displayed to stdout to be sent to graphite.
         """
         self.app.run()
 
@@ -147,6 +151,9 @@ class CloudHealthAPITest(unittest.TestCase):
     @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME_ARG, '--set-date', SET_DATE])
     @patch('sys.stdout', new_callable=StringIO)
     def test_run_with_set_date(self, mock_stdout):
+        """
+        Cloud Health to Graphite: Only the designated date's data is displayed to stdout when --set-date is used
+        """
         app = Application()
         app.cloud_health.get_custom_report = MagicMock(side_effect=CloudHealthAPITest._get_cloud_health_return)
 
@@ -172,6 +179,9 @@ class CloudHealthAPITest(unittest.TestCase):
     @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME_ARG, '--date-format', DATE_FORMAT])
     @patch('sys.stdout', new_callable=StringIO)
     def test_run_with_set_date(self, mock_stdout):
+        """
+        Cloud Health to Graphite: The date in the data is correctly parsed with the passed --date-format
+        """
         app = Application()
         # Create a lambda function that calls _get_cloud_health_return() with CloudHealthAPITest.DATE_FORMAT
         # This is because side_effect can only take a function pointer
@@ -208,7 +218,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
     def test_main(self):
         """
-        Cloud Health API Test: Application is instantiated and run() is called in main()
+        Cloud Health to Graphite: Application is instantiated and run() is called in main()
         """
         app = MagicMock()
         app_class = MagicMock(return_value=app)
