@@ -76,6 +76,13 @@ class Application(krux_cloud_health.cli.Application):
             help="Retrieve cost history data for specific date, depending on interval. (ex: 'YYYY-MM-DD' for daily)",
         )
 
+        group.add_argument(
+            '--date-format',
+            type=str,
+            default='%Y-%m-%d',
+            help="Format string to use to parse the date passed by Cloud Health (default: %(default)s)",
+        )
+
     @staticmethod
     def _sanitize_stats(stat_name):
         return re.sub(Application._INVALID_STATS_PATTERN, '_', stat_name)
@@ -93,7 +100,7 @@ class Application(krux_cloud_health.cli.Application):
             del report_data['Total']
 
         for date, values in iteritems(report_data):
-            date = int(calendar.timegm(datetime.strptime(date, '%Y-%m-%d').utctimetuple()))
+            date = int(calendar.timegm(datetime.strptime(date, self.args.date_format).utctimetuple()))
 
             for category, cost in iteritems(values):
                 # XXX: Empty space and period causes issues with graphite. Replace it with underscore.
