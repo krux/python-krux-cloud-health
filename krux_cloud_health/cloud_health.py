@@ -109,9 +109,11 @@ class CloudHealth(object):
 
         return self._get_data(api_call, 'AWS-Account', aws_account_input)
 
-    def get_custom_report(self, report_id, category=None):
+    def get_custom_report(self, report_id, category=None, time_interval=Interval.hourly):
         report = 'olap_reports/custom/{report_id}'.format(report_id=report_id)
-        api_call = self._get_api_call(report, self.api_key)
+        params = {'interval': time_interval.name}
+
+        api_call = self._get_api_call(report, self.api_key, params)
 
         self.logger.debug(api_call)
 
