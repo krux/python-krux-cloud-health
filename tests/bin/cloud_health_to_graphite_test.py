@@ -27,6 +27,7 @@ from six import iteritems
 #
 
 from krux_cloud_health import VERSION
+from krux_cloud_health.cloud_health import Interval
 from bin.cloud_health_to_graphite import Application, main
 
 
@@ -40,25 +41,40 @@ class CloudHealthAPITest(unittest.TestCase):
     REPORT_NAME = re.sub('[ \.]+', '_', REPORT_NAME_ARG)
     SET_DATE = '2016-05-01'
     DATE_FORMAT = '%Y-%m-%d %H:%M'
+    INTERVAL = Interval.daily
 
     _DEFAULT_DATE_FORMAT = '%Y-%m-%d'
+    _DEFAULT_TIME_INTERVAL = Interval.hourly
     _STDOUT_FORMAT = 'cloud_health.{env}.{report_name}.{category} {cost} {date}\n'
 
     @staticmethod
-    def _get_cloud_health_return(report_id, category=None, date_format=_DEFAULT_DATE_FORMAT):
+    def _get_cloud_health_return(
+        report_id,
+        category=None,
+        date_format=_DEFAULT_DATE_FORMAT,
+        time_interval=_DEFAULT_TIME_INTERVAL,
+    ):
         """
         Creates a fake data to mock Cloud Health API
         """
         result = {
             'Total': {'key1': 'value1', 'key2': None},
         }
+
         dt = datetime.today()
+        dt_diff = {
+            Interval.monthly: {'days': 30},
+            Interval.weekly: {'days': 7},
+            Interval.daily: {'days': 1},
+            Interval.hourly: {'hours': 1},
+        }
+
         for index in range(0, 11):
             result[dt.strftime(date_format)] = {
                 'key1': 'value1',
                 'key2': None,
             }
-            dt = dt - timedelta(days=30)
+            dt = dt - timedelta(**dt_diff[time_interval])
 
         if category is None:
             return result
@@ -123,6 +139,7 @@ class CloudHealthAPITest(unittest.TestCase):
         self.app.cloud_health.get_custom_report.assert_called_once_with(
             report_id=self.REPORT_ID,
             category=None,
+            time_interval=Interval.hourly,
         )
         self.app.logger.debug.assert_called_once_with(
             pprint.pformat(CloudHealthAPITest._get_cloud_health_return(self.REPORT_ID))
@@ -178,7 +195,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
     @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME_ARG, '--date-format', DATE_FORMAT])
     @patch('sys.stdout', new_callable=StringIO)
-    def test_run_with_set_date(self, mock_stdout):
+    def test_run_with_date_format(self, mock_stdout):
         """
         Cloud Health to Graphite: The date in the data is correctly parsed with the passed --date-format
         """
@@ -186,8 +203,8 @@ class CloudHealthAPITest(unittest.TestCase):
         # Create a lambda function that calls _get_cloud_health_return() with CloudHealthAPITest.DATE_FORMAT
         # This is because side_effect can only take a function pointer
         app.cloud_health.get_custom_report = MagicMock(
-            side_effect=lambda report_id, category: CloudHealthAPITest._get_cloud_health_return(
-                report_id=report_id, date_format=CloudHealthAPITest.DATE_FORMAT,
+            side_effect=lambda report_id, category, time_interval: CloudHealthAPITest._get_cloud_health_return(
+                report_id=report_id, date_format=CloudHealthAPITest.DATE_FORMAT, time_interval=time_interval
             )
         )
 
@@ -196,13 +213,47 @@ class CloudHealthAPITest(unittest.TestCase):
         prints = ''
 
         api_data = CloudHealthAPITest._get_cloud_health_return(
-            self.REPORT_ID, date_format=CloudHealthAPITest.DATE_FORMAT,
+            self.REPORT_ID, date_format=self.DATE_FORMAT,
         )
         for date, values in iteritems(api_data):
             if date is 'Total':
                 continue
 
             date = int(calendar.timegm(datetime.strptime(date, self.DATE_FORMAT).utctimetuple()))
+
+            for category, cost in iteritems(values):
+                if cost is not None:
+                    prints += self._STDOUT_FORMAT.format(
+                        env=self.app.args.stats_environment,
+                        report_name=self.REPORT_NAME,
+                        category=category,
+                        cost=cost,
+                        date=date,
+                    )
+
+        self.assertEqual(prints, mock_stdout.getvalue())
+
+    @patch('sys.argv', ['prog', API_KEY, REPORT_ID_ARG, '--report-name', REPORT_NAME_ARG, '--interval', INTERVAL.name])
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_run_with_interval(self, mock_stdout):
+        """
+        Cloud Health to Graphite: The date in the data is correctly parsed with the passed --interval
+        """
+        app = Application()
+        app.cloud_health.get_custom_report = MagicMock(side_effect=CloudHealthAPITest._get_cloud_health_return)
+
+        app.run()
+
+        prints = ''
+
+        api_data = CloudHealthAPITest._get_cloud_health_return(
+            self.REPORT_ID, time_interval=self.INTERVAL,
+        )
+        for date, values in iteritems(api_data):
+            if date is 'Total':
+                continue
+
+            date = int(calendar.timegm(datetime.strptime(date, self._DEFAULT_DATE_FORMAT).utctimetuple()))
 
             for category, cost in iteritems(values):
                 if cost is not None:
