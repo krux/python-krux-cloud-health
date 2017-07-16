@@ -109,7 +109,6 @@ class Application(krux_cloud_health.cli.Application):
         except (ValueError, IndexError) as e:
             self.logger.error(e.message)
             self.exit(1)
-            return
 
         if 'Total' in report_data:
             del report_data['Total']
