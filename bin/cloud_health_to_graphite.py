@@ -110,11 +110,13 @@ class Application(krux_cloud_health.cli.Application):
             self.logger.error(e.message)
             self.exit(1)
 
+        # API always returns a set of dates and a total for the keys of the dictionary. We don't need the total
+        # value. Ignore it here.
         if 'Total' in report_data:
             del report_data['Total']
 
         for date, values in iteritems(report_data):
-            date = int(calendar.timegm(datetime.strptime(date, self.args.date_format).utctimetuple()))
+            posix_date = int(calendar.timegm(datetime.strptime(date, self.args.date_format).utctimetuple()))
 
             for category, cost in iteritems(values):
                 # XXX: Empty space and period causes issues with graphite. Replace it with underscore.
@@ -125,7 +127,7 @@ class Application(krux_cloud_health.cli.Application):
                         report_name=self.report_name,
                         category=category,
                         cost=cost,
-                        date=date,
+                        date=posix_date,
                     ))
 
 

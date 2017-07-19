@@ -63,6 +63,8 @@ class CloudHealthAPITest(unittest.TestCase):
 
         dt = datetime.today()
         dt_diff = {
+            # GOTCHA: This is technically not always a month incremental. However, the main purpose of this mocking is
+            #         to test the datetime format string. Thus, leaving this as is for the maintainability and readability.
             Interval.monthly: {'days': 30},
             Interval.weekly: {'days': 7},
             Interval.daily: {'days': 1},
@@ -250,10 +252,12 @@ class CloudHealthAPITest(unittest.TestCase):
             self.REPORT_ID, time_interval=self.INTERVAL,
         )
         for date, values in iteritems(api_data):
+            # API always returns a set of dates and a total for the keys of the dictionary. We don't need the total
+            # value. Ignore it here.
             if date is 'Total':
                 continue
 
-            date = int(calendar.timegm(datetime.strptime(date, self._DEFAULT_DATE_FORMAT).utctimetuple()))
+            posix_date = int(calendar.timegm(datetime.strptime(date, self._DEFAULT_DATE_FORMAT).utctimetuple()))
 
             for category, cost in iteritems(values):
                 if cost is not None:
@@ -262,7 +266,7 @@ class CloudHealthAPITest(unittest.TestCase):
                         report_name=self.REPORT_NAME,
                         category=category,
                         cost=cost,
-                        date=date,
+                        date=posix_date,
                     )
 
         self.assertEqual(prints, mock_stdout.getvalue())
