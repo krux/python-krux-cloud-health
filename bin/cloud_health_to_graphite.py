@@ -28,6 +28,7 @@ from six import iteritems
 
 from krux.cli import get_group
 from krux_cloud_health import VERSION
+from krux_cloud_health.cloud_health import Interval
 import krux_cloud_health.cli
 
 
@@ -44,6 +45,8 @@ class Application(krux_cloud_health.cli.Application):
 
         # XXX: Empty space and period causes issues with graphite. Replace it with underscore.
         self.report_name = Application._sanitize_stats(self.args.report_name)
+
+        self.interval = Interval[self.args.interval]
 
     def add_cli_arguments(self, parser):
         """
@@ -83,24 +86,37 @@ class Application(krux_cloud_health.cli.Application):
             help="Format string to use to parse the date passed by Cloud Health (default: %(default)s)",
         )
 
+        group.add_argument(
+            '--interval',
+            type=str,
+            choices=[interval.name for interval in Interval],
+            default=Interval.hourly.name,
+            help="Time interval to be used in report (default: %(default)s)",
+        )
+
     @staticmethod
     def _sanitize_stats(stat_name):
         return re.sub(Application._INVALID_STATS_PATTERN, '_', stat_name)
 
     def run(self):
         try:
-            report_data = self.cloud_health.get_custom_report(report_id=self.args.report_id, category=self.args.set_date)
+            report_data = self.cloud_health.get_custom_report(
+                report_id=self.args.report_id,
+                category=self.args.set_date,
+                time_interval=self.interval,
+            )
             self.logger.debug(pprint.pformat(report_data))
         except (ValueError, IndexError) as e:
             self.logger.error(e.message)
             self.exit(1)
-            return
 
+        # API always returns a set of dates and a total for the keys of the dictionary. We don't need the total
+        # value. Ignore it here.
         if 'Total' in report_data:
             del report_data['Total']
 
         for date, values in iteritems(report_data):
-            date = int(calendar.timegm(datetime.strptime(date, self.args.date_format).utctimetuple()))
+            posix_date = int(calendar.timegm(datetime.strptime(date, self.args.date_format).utctimetuple()))
 
             for category, cost in iteritems(values):
                 # XXX: Empty space and period causes issues with graphite. Replace it with underscore.
@@ -111,7 +127,7 @@ class Application(krux_cloud_health.cli.Application):
                         report_name=self.report_name,
                         category=category,
                         cost=cost,
-                        date=date,
+                        date=posix_date,
                     ))
 
 

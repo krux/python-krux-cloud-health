@@ -28,6 +28,7 @@ class CloudHealthTest(unittest.TestCase):
     API_KEY = '12345'
     COST_HISTORY_REPORT = 'olap_reports/cost/history'
     COST_CURRENT_REPORT = 'olap_reports/cost/current'
+    CUSTOM_REPORT_TEMPLATE = 'olap_reports/custom/{report_id}'
     API_ENDPOINT = 'https://apps.cloudhealthtech.com/'
     COST_HISTORY_URI = '{}{}'.format(API_ENDPOINT, COST_HISTORY_REPORT)
     URI_ARGS_NO_PARAMS = {'api_key': API_KEY}
@@ -74,6 +75,7 @@ class CloudHealthTest(unittest.TestCase):
         'date1': {'service2': 2.25, 'service3': None},
         'date2': {'service2': 4.11, 'service3': None},
     }
+    REPORT_ID = 1234567890
 
     def setUp(self):
         self.cloud_health = get_cloud_health(args=MagicMock(api_key=CloudHealthTest.API_KEY))
@@ -176,6 +178,45 @@ class CloudHealthTest(unittest.TestCase):
             CloudHealthTest.API_CALL,
             CloudHealthTest.COST_CURRENT_CATEGORY_TYPE,
             None,
+        )
+
+    def test_get_custom_report_default(self):
+        """
+        Cloud Health Test: Custom report method properly passes in arguments to Get API call method with default arguments.
+        """
+        self.cloud_health._get_api_call = MagicMock(return_value=CloudHealthTest.API_CALL)
+        self.cloud_health._get_data = MagicMock()
+
+        self.cloud_health.get_custom_report(report_id=CloudHealthTest.REPORT_ID)
+
+        self.cloud_health._get_api_call.assert_called_once_with(
+            CloudHealthTest.CUSTOM_REPORT_TEMPLATE.format(report_id=CloudHealthTest.REPORT_ID),
+            CloudHealthTest.API_KEY,
+            {'interval': Interval.hourly.name}
+        )
+        self.cloud_health._get_data.assert_called_once_with(
+            CloudHealthTest.API_CALL, category_name=None, exclude_summary=False
+        )
+
+    def test_get_custom_report_parameters(self):
+        """
+        Cloud Health Test: Custom report method properly passes in arguments to Get API call method with passed arguments.
+        """
+        self.cloud_health._get_api_call = MagicMock(return_value=CloudHealthTest.API_CALL)
+        self.cloud_health._get_data = MagicMock()
+
+        category = 'category'
+        self.cloud_health.get_custom_report(
+            report_id=CloudHealthTest.REPORT_ID, category=category, time_interval=Interval.daily
+        )
+
+        self.cloud_health._get_api_call.assert_called_once_with(
+            CloudHealthTest.CUSTOM_REPORT_TEMPLATE.format(report_id=CloudHealthTest.REPORT_ID),
+            CloudHealthTest.API_KEY,
+            {'interval': Interval.daily.name}
+        )
+        self.cloud_health._get_data.assert_called_once_with(
+            CloudHealthTest.API_CALL, category_name=category, exclude_summary=False
         )
 
     @patch('krux_cloud_health.cloud_health.pprint.pformat')
