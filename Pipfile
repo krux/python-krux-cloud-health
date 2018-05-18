@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+krux-stdlib = "==2.5.2"
+requests = "==2.12.4"
+"enum34" = "==1.1.6"
+six = "==1.10.0"
+
+[dev-packages]
+coverage = "*"
+mock = "*"
+nose = "*"
+
+[requires]
+python_version = "2.7"
