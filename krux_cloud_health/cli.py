@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# © 2016 Krux Digital, Inc.
+# © 2016-2018 Salesforce.com, inc.
 #
 """
 CLI tools for accessing Krux Cloud Health Tech
