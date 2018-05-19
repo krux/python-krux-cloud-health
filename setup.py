@@ -26,12 +26,14 @@ setup(
     version=__version__,
     author='Kareena Hirani',
     author_email='khirani@krux.com',
+    maintainer='Peter Han',
+    maintainer_email='phan@salesforce.com',
     description='Retrieves and organizes info from Krux Cloud Health API',
     url=REPO_URL,
     download_url=DOWNLOAD_URL,
     license='All Rights Reserved.',
     packages=find_packages(exclude=['tests']),
-    # dependencies are named in requirements.pip
+    # dependencies are named in Pipfile
     install_requires=[],
     entry_points={
         'console_scripts': [
