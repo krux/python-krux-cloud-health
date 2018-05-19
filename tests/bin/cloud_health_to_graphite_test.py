@@ -63,8 +63,9 @@ class CloudHealthAPITest(unittest.TestCase):
 
         dt = datetime.today()
         dt_diff = {
-            # GOTCHA: This is technically not always a month incremental. However, the main purpose of this mocking is
-            #         to test the datetime format string. Thus, leaving this as is for the maintainability and readability.
+            # GOTCHA: This is technically not always a month incremental. However, the main purpose
+            #         of this mocking is to test the datetime format string. Thus, leaving this as is
+            #         for the maintainability and readability.
             Interval.monthly: {'days': 30},
             Interval.weekly: {'days': 7},
             Interval.daily: {'days': 1},

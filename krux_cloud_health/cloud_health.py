@@ -101,8 +101,8 @@ class CloudHealth(object):
         """
         Current month's costs for AWS accounts.
 
-        :argument time_input: AWS account for which data is retrieved (optional)
-                              - if not specified, will return information for all AWS accounts
+        :argument aws_account_input: AWS account for which data is retrieved (optional)
+                                     - if not specified, will return information for all AWS accounts
         """
         report = "olap_reports/cost/current"
         api_call = self._get_api_call(report, self.api_key)
@@ -125,7 +125,7 @@ class CloudHealth(object):
 
         :argument report: Filters data from API call for specific report
         :argument api_key: API allows data to be retrieved
-        :argument time_interval: Filters data from API call for specific time interval
+        :argument params: Filters data from API call for specific time interval
         """
         uri_args = {'api_key': api_key}
         uri_args.update(params)

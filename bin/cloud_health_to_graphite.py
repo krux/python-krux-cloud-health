@@ -136,6 +136,7 @@ def main():
     with app.context():
         app.run()
 
+
 # Run the application stand alone
 if __name__ == '__main__':
     main()
