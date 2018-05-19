@@ -71,7 +71,7 @@ def get_cloud_health(args=None, logger=None, stats=None):
 
 
 class CloudHealth(object):
-    _API_ENDPOINT = "https://apps.cloudhealthtech.com/"
+    _API_ENDPOINT = "https://chapi.cloudhealthtech.com/"
     _CATEGORY_DIMENSION_INDEX = 0
     _SERVICE_DIMENSION_INDEX = 1
 
