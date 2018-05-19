@@ -27,7 +27,7 @@ from six import iteritems
 #
 
 from krux.cli import get_group
-from krux_cloud_health import VERSION
+from krux_cloud_health import __version__
 from krux_cloud_health.cloud_health import Interval
 import krux_cloud_health.cli
 
@@ -38,7 +38,7 @@ class Application(krux_cloud_health.cli.Application):
     _INVALID_STATS_PATTERN = re.compile('[ \.]+')
 
     def __init__(self, name=NAME):
-        self._VERSIONS[self.NAME] = VERSION
+        self._VERSIONS[self.NAME] = __version__
 
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)

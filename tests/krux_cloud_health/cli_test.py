@@ -21,7 +21,7 @@ from mock import MagicMock, patch
 # Internal libraries
 #
 
-from krux_cloud_health import VERSION
+from krux_cloud_health import __version__
 from krux_cloud_health.cli import Application, main
 from krux_cloud_health.cloud_health import Interval, NAME
 from krux.stats import DummyStatsClient
@@ -65,7 +65,7 @@ class CLItest(unittest.TestCase):
 
         # Verify the version info is specified
         self.assertIn(NAME, self.app._VERSIONS)
-        self.assertEqual(VERSION, self.app._VERSIONS[NAME])
+        self.assertEqual(__version__, self.app._VERSIONS[NAME])
 
         self.mock_get_cloud_health.assert_called_once_with(
             args=self.app.args,

@@ -26,7 +26,7 @@ from six import iteritems
 # Internal libraries
 #
 
-from krux_cloud_health import VERSION
+from krux_cloud_health import __version__
 from krux_cloud_health.cloud_health import Interval
 from bin.cloud_health_to_graphite import Application, main
 
@@ -100,7 +100,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
         # Verify the version info is specified
         self.assertIn(Application.NAME, self.app._VERSIONS)
-        self.assertEqual(VERSION, self.app._VERSIONS[Application.NAME])
+        self.assertEqual(__version__, self.app._VERSIONS[Application.NAME])
 
     def test_add_cli_arguments(self):
         """
