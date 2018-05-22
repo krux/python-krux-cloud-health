@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# © 2016 Krux Digital, Inc.
+# © 2016-2018 Salesforce.com, inc.
 #
 """
 CLI tools for accessing Krux Cloud Health Tech
@@ -18,14 +18,14 @@ import pprint
 #
 
 import krux.cli
-from krux_cloud_health import VERSION
+from krux_cloud_health import __version__
 from krux_cloud_health.cloud_health import Interval, NAME, add_cloud_health_cli_arguments, get_cloud_health
 
 
 class Application(krux.cli.Application):
 
     def __init__(self, name=NAME):
-        self._VERSIONS[NAME] = VERSION
+        self._VERSIONS[NAME] = __version__
 
         # Call to the superclass to bootstrap.
         super(Application, self).__init__(name=name)

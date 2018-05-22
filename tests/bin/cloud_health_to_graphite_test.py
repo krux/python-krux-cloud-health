@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# © 2016 Krux Digital, Inc.
+# © 2016-2018 Salesforce.com, inc.
 #
 
 #
@@ -26,7 +26,7 @@ from six import iteritems
 # Internal libraries
 #
 
-from krux_cloud_health import VERSION
+from krux_cloud_health import __version__
 from krux_cloud_health.cloud_health import Interval
 from bin.cloud_health_to_graphite import Application, main
 
@@ -63,8 +63,9 @@ class CloudHealthAPITest(unittest.TestCase):
 
         dt = datetime.today()
         dt_diff = {
-            # GOTCHA: This is technically not always a month incremental. However, the main purpose of this mocking is
-            #         to test the datetime format string. Thus, leaving this as is for the maintainability and readability.
+            # GOTCHA: This is technically not always a month incremental. However, the main purpose
+            #         of this mocking is to test the datetime format string. Thus, leaving this as is
+            #         for the maintainability and readability.
             Interval.monthly: {'days': 30},
             Interval.weekly: {'days': 7},
             Interval.daily: {'days': 1},
@@ -100,7 +101,7 @@ class CloudHealthAPITest(unittest.TestCase):
 
         # Verify the version info is specified
         self.assertIn(Application.NAME, self.app._VERSIONS)
-        self.assertEqual(VERSION, self.app._VERSIONS[Application.NAME])
+        self.assertEqual(__version__, self.app._VERSIONS[Application.NAME])
 
     def test_add_cli_arguments(self):
         """
