@@ -22,13 +22,13 @@ DOWNLOAD_URL = ''.join((REPO_URL, '/tarball/release/', __version__))
 
 
 setup(
-    name='python-krux-cloud-health',
+    name='krux-cloud-health',
     version=__version__,
     author='Kareena Hirani',
     author_email='khirani@krux.com',
     maintainer='Peter Han',
     maintainer_email='phan@salesforce.com',
-    description='Retrieves and organizes info from Krux Cloud Health API',
+    description='Retrieves and organizes info from Cloud Health API',
     url=REPO_URL,
     download_url=DOWNLOAD_URL,
     license='All Rights Reserved.',

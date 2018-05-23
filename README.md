@@ -1,7 +1,7 @@
-python-krux-cloud-health
+krux-cloud-health
 ===============
 
-Python library to access information from Krux Cloud Health.
+Python library to access information from Cloud Health.
 
 Application quick start
 ===============
