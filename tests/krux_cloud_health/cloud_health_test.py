@@ -29,7 +29,7 @@ class CloudHealthTest(unittest.TestCase):
     COST_HISTORY_REPORT = 'olap_reports/cost/history'
     COST_CURRENT_REPORT = 'olap_reports/cost/current'
     CUSTOM_REPORT_TEMPLATE = 'olap_reports/custom/{report_id}'
-    API_ENDPOINT = 'https://apps.cloudhealthtech.com/'
+    API_ENDPOINT = 'https://chapi.cloudhealthtech.com/'
     COST_HISTORY_URI = '{}{}'.format(API_ENDPOINT, COST_HISTORY_REPORT)
     URI_ARGS_NO_PARAMS = {'api_key': API_KEY}
     TIME_INTERVAL = Interval['daily']
