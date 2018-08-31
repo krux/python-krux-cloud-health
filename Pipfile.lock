@@ -1,13 +1,23 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "dbf5c3f4feae5e76f98b9ced5efaef33ebadf766c1db9861f577cbb4d656c02c"
+            "sha256": "7c7192171f775ea8316131efd697d8a5556a8601c3ad774667b769b1abf1b760"
         },
         "pipfile-spec": 6,
         "requires": {
             "python_version": "2.7"
         },
         "sources": [
+            {
+                "name": "kruxprop",
+                "url": "${KRUX_PIP_PROP_URL}",
+                "verify_ssl": true
+            },
+            {
+                "name": "kruxfoss",
+                "url": "${KRUX_PIP_FOSS_URL}",
+                "verify_ssl": true
+            },
             {
                 "name": "pypi",
                 "url": "https://pypi.org/simple",
