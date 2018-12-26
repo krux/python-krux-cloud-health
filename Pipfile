@@ -14,15 +14,15 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-krux-stdlib = "==3.0.0"
-requests = "==2.21.0"
-"enum34" = "==1.1.6"
-six = "==1.11.0"
+krux-stdlib = {version="==3.0.0", index="kruxfoss"}
+requests = {version="==2.21.0", index="pypi"}
+"enum34" = {version="==1.1.6", index="pypi"}
+six = {version="==1.11.0", index="pypi"}
 
 [dev-packages]
-coverage = "*"
-mock = "*"
-nose = "*"
+coverage = {version="*", index="pypi"}
+mock = {version="*", index="pypi"}
+nose = {version="*", index="pypi"}
 
 [requires]
 python_version = "2.7"
